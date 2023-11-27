@@ -6,3 +6,4 @@ Exercises from https://www.learncpp.com/
 - Add -ggdb to the command line when debugging and -O2 -DNDEBUG for release builds.
 - You can disable compiler extensions by adding the -pedantic-errors flag to the compile command line.
 - For warnings, add the following flags to your command line: -Wall -Weffc++ -Wextra -Wconversion -Wsign-conversion
+  - To treat warnings as errors, add the following flag to your command line: -Werror
