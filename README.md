@@ -65,4 +65,21 @@ Expressions
 - A full expression is an expression that is not a subexpression
 - In casual language, a compound expression is an expression that contains two or more uses of operators
 
+### Chapter 2
+
+Introduction to functions
+- A function call is an expression that tells the CPU to interrupt the current function and execute another function. The CPU “puts a bookmark” at the current point of execution, and then calls (executes) the function named in the function call. When the called function ends, the CPU returns back to the point it bookmarked, and resumes execution.
+- Nested functions are not supported
+- return value is copied from the function back to the caller. This process is called return by value.
+- When the program is executed, the operating system makes a function call to main. Execution then jumps to the top of main. The statements in main are executed sequentially. Finally, main returns an integer value (usually 0), and your program terminates. The return value from main is sometimes called a status code (also sometimes called an exit code, or rarely a return code), as it is used to indicate whether the program ran successfully or not.
+- By definition, a status code of 0 means the program executed successfully.
+- A function that returns a value is called a value-returning function. A function is value-returning if the return type is anything other than void
+
+Function return values (value-returning functions)
+
+Void functions (non-value returning functions)
+- Returning a value from a void function is a compile error
+
+Introduction to function parameters and arguments
+- A function parameter is a variable used in the header of a function. Function parameters work almost identically to variables defined inside the function, but with one difference: they are initialized with a value provided by the caller of the function.
 
