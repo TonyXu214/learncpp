@@ -82,4 +82,41 @@ Void functions (non-value returning functions)
 
 Introduction to function parameters and arguments
 - A function parameter is a variable used in the header of a function. Function parameters work almost identically to variables defined inside the function, but with one difference: they are initialized with a value provided by the caller of the function.
+- When a function is called, all of the parameters of the function are created as variables, and the value of each of the arguments is copied into the matching parameter (using copy initialization). This process is called pass by value. Function parameters that utilize pass by value are called value parameters
+- In certain cases, you will encounter functions that have parameters that are not used in the body of the function. These are called unreferenced parameters.
+- In a function definition, the name of a function parameter is optional. Therefore, in cases where a function parameter needs to exist but is not used in the body of the function, you can simply omit the name. A parameter without a name is called an unnamed parameter
+
+Introduction to local scope
+- Variables defined inside the body of a function are called local Variables
+- Function parameters are also generally considered to be local Variables
+- Local variables are destroyed in the opposite order of creation at the end of the set of curly braces in which it is defined
+- an object’s lifetime is defined to be the time between its creation and destruction. Note that variable creation and destruction happen when the program is running (called runtime), not at compile time. Therefore, lifetime is a runtime property
+- An identifier’s scope determines where the identifier can be seen and used within the source code. When an identifier can be seen and used, we say it is in scope. When an identifier can not be seen, we can not use it, and we say it is out of scope. Scope is a compile-time property, and trying to use an identifier when it is not in scope will result in a compile error.
+- Local variables defined in one function are also not in scope in other functions that are called.
+- An identifier is out of scope anywhere it cannot be accessed within the code. In the example above, the identifier x is in scope from its point of definition to the end of the main function. The identifier x is out of scope outside of that code region.
+- The term “going out of scope” is typically applied to objects rather than identifiers. We say an object goes out of scope at the end of the scope (the end curly brace) in which the object was instantiated. In the example above, the object named x goes out of scope at the end of the function main.
+- A local variable’s lifetime ends at the point where it goes out of scope, so local variables are destroyed at this point.
+- Note that not all types of variables are destroyed when they go out of scope. We’ll see examples of these in future lessons.
+- the best practice is that local variables inside the function body should be defined as close to their first use as reasonable:
+
+Forward declarations and definitions
+- When addressing compilation errors or warnings in your programs, resolve the first issue listed and then compile again.
+- A forward declaration allows us to tell the compiler about the existence of an identifier before actually defining the identifier.
+- To write a forward declaration for a function, we use a function declaration statement
+- However, if a forward declaration is made and the function is called, but the program never defines the function, the program will compile okay, but the linker will complain that it can’t resolve the function call.
+- However, forward declarations can also be used with other identifiers in C++, such as variables and types
+- A declaration tells the compiler about the existence of an identifier and its associated type information.
+- A definition is a declaration that actually implements (for functions and types) or instantiates (for variables) the identifier.
+- In C++, all definitions are declarations. Therefore int x; is both a definition and a declaration.
+- Declarations that aren’t definitions are called pure declarations
+- The one definition rule (or ODR for short) is a well-known rule in C++
+  - Within a file, each function, variable, type, or template can only have one definition. Definitions occurring in different scopes (e.g. local variables defined inside different functions, or functions defined inside different namespaces) do not violate this rule.
+    - causes compilation error
+  - Within a program, each function or variable can only have one definition. This rule exists because programs can have more than one file (we’ll cover this in the next lesson). Functions and variables not visible to the linker are excluded from this rule
+    - causes linker error
+  - Types, templates, inline functions, and inline variables are allowed to have duplicate definitions in different files, so long as each definition is identical.
+    - causes undefined behavior
+- A function prototype is a declaration statement that includes a function’s name, return type, parameter types, and optionally the parameter names
+
+Programs with multiple code files
 

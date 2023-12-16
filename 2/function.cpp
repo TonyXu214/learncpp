@@ -1,5 +1,7 @@
 #include <iostream>
 
+int add(int x, int y);
+
 int doReturnInput()
 {
     int x{};
@@ -53,6 +55,11 @@ int getUserInput()
 int main()
 {
 
-    std::cout << getUserInput() << std::endl;
+    std::cout << add(1, 2) << std::endl;
     return 0;
 }
+
+// int add(int x, int y)
+// {
+//     return x + y;
+// }
