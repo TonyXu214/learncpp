@@ -155,6 +155,31 @@ Introduction to the preprocessor
 - Object-like macros don’t affect other preprocessor directives
 - This means that directives are only valid from the point of definition to the end of the file in which they are defined.
 
+Header Files
+- The other type of file is called a header file. Header files usually have a .h extension, but you will occasionally see them with a .hpp extension or no extension at all. The primary purpose of a header file is to propagate declarations to code (.cpp) files
+- Unlike source files, header files should not be added to your compile command (they are implicitly included by #include statements and compiled as part of your source files).
+- Header files are often paired with code files, with the header file providing forward declarations for the corresponding code file.
+- In C++, it is a best practice for code files to #include their paired header file (if one exists). In the example above, add.cpp includes add.h.
+- This allows the compiler to catch certain kinds of errors at compile time instead of link time.
+- angled brackets vs double quotes helps give the preprocessor a clue as to where it should look for header files
+- When we use angled brackets, we’re telling the preprocessor that this is a header file we didn’t write ourselves. The preprocessor will search for the header only in the directories specified by the include directories. The include directories are configured as part of your project/IDE settings/compiler settings, and typically default to the directories containing the header files that come with your compiler and/or OS. The preprocessor will not search for the header file in your project’s source code directory.
+- When we use double-quotes, we’re telling the preprocessor that this is a header file that we wrote. The preprocessor will first search for the header file in the current directory. If it can’t find a matching header there, it will then search the include directories.
+- When including a header file from the standard library, use the version without the .h extension if it exists.
+- If a header file without a .h extension declares names into the global namespace, avoid those names, as they may not be available in the global namespace on other compilers. Prefer the names declared in the std namespace instead.
+- Using g++, you can use the -I option to specify an alternate include directory:
+  - `g++ -o main -I/source/includes main.cpp`
+- When your code file #includes the first header file, you’ll also get any other header files that the first header file includes (and any header files those include, and so on). These additional header files are sometimes called transitive includes, as they’re included implicitly rather than explicitly
+- Unfortunately, there is no easy way to detect when your code file is accidentally relying on content of a header file that has been included by another header file.
+- To maximize the chance that missing includes will be flagged by compiler, order your #includes as follows:
+  - The paired header file
+  - Other headers from your project
+  - 3rd party library headers
+  - Standard library headers
+- The headers for each grouping should be sorted alphabetically (unless the documentation for a 3rd party library instructs you to do otherwise).
+- That way, if one of your user-defined headers is missing an #include for a 3rd party library or standard library header, it’s more likely to cause a compile error so you can fix it.
+- Prefer putting documentation on what something does or how to use it in the header. It’s more likely to be seen there. Documentation describing how something works should remain in the source files.
+
+
 Header guards
 - `#pragma once` serves the same purpose as header guards
 - Duplicate declarations are fine -- but even if your header file is composed of all declarations (no definitions) it’s still a best practice to include header guards.
