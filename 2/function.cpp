@@ -1,6 +1,16 @@
+#include "test.h"
+#include "square.h"
 #include <iostream>
 
+#define LIGMA "balls"
+#define PRINTING
+// #define PRINT_MY_BALLS
+
+// using namespace std;
+
 int add(int x, int y);
+int getInput();
+int getSquareSides();
 
 int doReturnInput()
 {
@@ -55,7 +65,18 @@ int getUserInput()
 int main()
 {
 
-    std::cout << add(1, 2) << std::endl;
+    std::cout << getArea(5) << std::endl;
+    // int x { getInput() };
+    // std::cout << LIGMA << std::endl;
+    // std::cout << add(1, 2) << std::endl;
+
+// #ifdef LIGMA_BALLLLLLS
+    // std::cout << "test" << std::endl;
+// #endif
+//
+// #ifndef PRINT_MY_BALLS
+//     std::cout << "my " << LIGMA << std::endl;
+// #endif
     return 0;
 }
 

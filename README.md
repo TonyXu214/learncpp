@@ -119,4 +119,47 @@ Forward declarations and definitions
 - A function prototype is a declaration statement that includes a function’s name, return type, parameter types, and optionally the parameter names
 
 Programs with multiple code files
+- if a definition exists in the same file, the compiler will connect the use of the identifier to its definition
+- if a definition exists in a different file (and is visible to the linker), the linker will connect the use of the identifier to its definition
+- the linker will issue an error indicating that it couldn’t find a definition for the identifier
+- If two identical identifiers are introduced into the same program in a way that the compiler or linker can’t tell them apart, the compiler or linker will produce an error. This error is generally referred to as a naming collision
+
+Naming collisions and an introduction to namespaces
+- A namespace is a region that allows you to declare names inside of it for the purpose of disambiguation. The namespace provides a scope region (called namespace scope) to the names declared inside of it -- which simply means that any name declared inside the namespace won’t be mistaken for identical names in other scopes
+- In C++, any name that is not defined inside a class, function, or a namespace is considered to be part of an implicitly defined namespace called the global namespace (sometimes also called the global scope).
+- Only declarations and definitions can appear in a namespace. this also means that other types of statements (such as expression statements) cannot be placed in the global namespace.
+  - executable statements are not allowed in the global namespace
+- The :: symbol is an operator called the scope resolution operator. The identifier to the left of the :: symbol identifies the namespace that the name to the right of the :: symbol is contained within. If no identifier to the left of the :: symbol is provided, the global namespace is assumed.
+- When an identifier includes a namespace prefix, the identifier is called a qualified name
+- A using directive allows us to access the names in a namespace without using a namespace prefix
+
+Introduction to the preprocessor
+- prior to compilation, each code (.cpp) file goes through a preprocessing phase
+- the preprocessor does have one very important role: it is what processes #include directives
+- When the preprocessor has finished processing a code file, the result is called a translation unit
+- The entire process of preprocessing, compiling, and linking is called translation.
+- Preprocessor directives (often just called directives) are instructions that start with a # symbol and end with a newline (NOT a semicolon)
+- When you #include a file, the preprocessor replaces the #include directive with the contents of the included file
+- The #define directive can be used to create a macro. In C++, a macro is a rule that defines how input text is converted into replacement output text.
+- There are two basic types of macros: object-like macros, and function-like macros.
+- Function-like macros act like functions, and serve a similar purpose. Their use is generally considered unsafe, and almost anything they can do can be done by a normal function.
+- Object-like macros can be defined in one of two ways:
+```
+#define identifier
+#define identifier substitution_text
+```
+- preprocessor directives (not statements), note that neither form ends with a semicolon.
+- When the preprocessor encounters this directive, any further occurrence of the identifier is replaced by substitution_text. The identifier is traditionally typed in all capital letters, using underscores to represent spaces.
+- The conditional compilation preprocessor directives allow you to specify under what conditions something will or won’t compile
+  - The #ifdef preprocessor directive allows the preprocessor to check whether an identifier has been previously `#defined`
+- Object-like macros don’t affect other preprocessor directives
+- This means that directives are only valid from the point of definition to the end of the file in which they are defined.
+
+Header guards
+- `#pragma once` serves the same purpose as header guards
+- Duplicate declarations are fine -- but even if your header file is composed of all declarations (no definitions) it’s still a best practice to include header guards.
+- Note that header guards do not prevent the contents of a header file from being copied (once) into separate project files.
+- When including headers, use angled brackets when including system headers (e.g. those in the C++ standard library), and use double quotes when including user-defined headers (the ones you write)
+
+
 
