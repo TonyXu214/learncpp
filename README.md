@@ -179,12 +179,55 @@ Header Files
 - That way, if one of your user-defined headers is missing an #include for a 3rd party library or standard library header, it’s more likely to cause a compile error so you can fix it.
 - Prefer putting documentation on what something does or how to use it in the header. It’s more likely to be seen there. Documentation describing how something works should remain in the source files.
 
-
 Header guards
 - `#pragma once` serves the same purpose as header guards
 - Duplicate declarations are fine -- but even if your header file is composed of all declarations (no definitions) it’s still a best practice to include header guards.
 - Note that header guards do not prevent the contents of a header file from being copied (once) into separate project files.
 - When including headers, use angled brackets when including system headers (e.g. those in the C++ standard library), and use double quotes when including user-defined headers (the ones you write)
 
+
+### Chapter 2
+
+Syntax and semantic errors
+
+The debugging process
+
+A strategy for debugging
+
+Basic debugging tactics
+- When printing information for debugging purposes, use std::cerr instead of std::cout
+- When adding temporary debug statements, it can be helpful to not indent them
+
+More debugging tactics
+- One way to make it easier to disable and enable debugging throughout your program is to make your debugging statements conditional using preprocessor directives
+
+Using an integrated debugger: Stepping
+- If you’re compiling your project using a release configuration instead, the functionality of the debugger may not work correctly (e.g. when you try to step into your program, it will just run the program instead).
+- To ensure that all output from std::cout is output immediately, you can temporarily add the following statement to the top of your main() function:
+```
+std::cout << std::unitbuf; // enable automatic flushing for std::cout (for debugging)
+```
+- If you don’t want to continually add/remove/comment/uncomment the above, you can wrap the statement in a conditional compilation preprocessor directive
+```
+#ifdef DEBUG
+std::cout << std::unitbuf; // enable automatic flushing for std::cout (for debugging)
+#endif
+```
+
+
+Using an integrated debugger: Running and breakpoints
+
+Using an integrated debugger: Watching variables
+- The watch window is a window where you can add variables you would like to continually inspect, and these variables will be updated as you step through your program.
+
+Using an integrated debugger: The call stack
+- The call stack is a list of all the active functions that have been called to get to the current point of execution.
+
+Finding issues before they become problems
+- Defensive programming is a practice whereby the programmer tries to anticipate all of the ways the software could be misused, either by end-users, or by other developers (including the programmer themselves) using the code
+- One common method of doing constraint based testing is via assert and static_assert,
+- Programmers tend to make certain kinds of common mistakes, and some of those mistakes can be discovered by programs trained to look for them. These programs, generally known as static analysis tools (sometimes informally called linters) are programs that analyze your code to identify specific semantic issues (in this context, static means that these tools analyze the source code)
+- You already have one static analysis tool at your disposal -- your compiler! In addition to ensuring your program is syntactically correct, most modern C++ compilers will do some light static analysis to identify some common problems
+- Use a static analysis tool on your programs to help find areas where your code is non-compliant with best practices.
 
 
