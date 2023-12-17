@@ -186,7 +186,7 @@ Header guards
 - When including headers, use angled brackets when including system headers (e.g. those in the C++ standard library), and use double quotes when including user-defined headers (the ones you write)
 
 
-### Chapter 2
+### Chapter 3
 
 Syntax and semantic errors
 
