@@ -243,3 +243,32 @@ Introduction to fundamental data types
 - C++ also supports a number of other more complex types, called compound types.
 - In C++, strings aren’t a fundamental type (they’re a compound type).
 - Many of the types defined in newer versions of C++ (e.g. std::nullptr_t) use a _t suffix. This suffix means “type”, and it’s a common nomenclature applied to modern types
+- The term integral means “like an integer”. Most often, integral is used as part of the term “integral type”, which includes the broader set of types that are stored in memory as integers, even though their behaviors might vary (which we’ll see later in this chapter when we talk about the character types). This includes bool, the integer types, and all the various character types.
+
+Void
+- void means “no type”
+- Void is our first example of an incomplete type. An incomplete type is a type that has been declared but not yet defined
+- The compiler knows about the existence of such types, but does not have enough information to determine how much memory to allocate for objects of that type. void is intentionally incomplete since it represents the lack of a type, and thus cannot be defined.
+- Incomplete types can not be instantiated:
+```
+void value; // won't work, variables can't be defined with incomplete type void
+```
+- void is used to indicate that a function does not return a value
+- If you use a return statement to try to return a value in such a function, a compile error will result
+
+Object sizes and the sizeof operator
+
+- The amount of memory that an object uses is based on its data type
+- When we access some variable x, the compiler knows how many bytes of data to retrieve (based on the type of variable x)
+- To generalize, an object with n bits (where n is an integer) can hold 2n (2 to the power of n, also commonly written 2^n) unique values
+- `sizeof` does not include dynamically allocated memory used by an object. We discuss dynamic memory allocation in a future lesson.
+
+Signed integers
+
+- By default, integers in C++ are signed, which means the number’s sign is stored as part of the number. Therefore, a signed integer can hold both positive and negative numbers (and 0).
+- In binary representation, a single bit (called the sign bit) is used to store the sign of the number. The non-sign bits (called the magnitude bits) determine the magnitude of the number.
+- We call the set of specific values that a data type can hold its range. The range of an integer variable is determined by two factors: its size (in bits), and whether it is signed or not.
+- By definition, an 8-bit signed integer has a range of -128 to 127.
+- n-bit signed variable has a range of -(2^(n-1)) to 2^(n-1)-1.
+- The C++20 standard makes this blanket statement: “If during the evaluation of an expression, the result is not mathematically defined or not in the range of representable values for its type, the behavior is undefined”. Colloquially, this is called overflow.
+- When doing division with two integers (called integer division), C++ always produces an integer result. Since integers can’t hold fractional values, any fractional portion is simply dropped (not rounded!).
