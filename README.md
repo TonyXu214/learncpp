@@ -257,14 +257,12 @@ void value; // won't work, variables can't be defined with incomplete type void
 - If you use a return statement to try to return a value in such a function, a compile error will result
 
 Object sizes and the sizeof operator
-
 - The amount of memory that an object uses is based on its data type
 - When we access some variable x, the compiler knows how many bytes of data to retrieve (based on the type of variable x)
 - To generalize, an object with n bits (where n is an integer) can hold 2n (2 to the power of n, also commonly written 2^n) unique values
 - `sizeof` does not include dynamically allocated memory used by an object. We discuss dynamic memory allocation in a future lesson.
 
 Signed integers
-
 - By default, integers in C++ are signed, which means the number’s sign is stored as part of the number. Therefore, a signed integer can hold both positive and negative numbers (and 0).
 - In binary representation, a single bit (called the sign bit) is used to store the sign of the number. The non-sign bits (called the magnitude bits) determine the magnitude of the number.
 - We call the set of specific values that a data type can hold its range. The range of an integer variable is determined by two factors: its size (in bits), and whether it is signed or not.
@@ -272,3 +270,59 @@ Signed integers
 - n-bit signed variable has a range of -(2^(n-1)) to 2^(n-1)-1.
 - The C++20 standard makes this blanket statement: “If during the evaluation of an expression, the result is not mathematically defined or not in the range of representable values for its type, the behavior is undefined”. Colloquially, this is called overflow.
 - When doing division with two integers (called integer division), C++ always produces an integer result. Since integers can’t hold fractional values, any fractional portion is simply dropped (not rounded!).
+
+Unsigned integers, and why to avoid them
+- Unsigned integers are integers that can only hold non-negative whole numbers
+- To define an unsigned integer, we use the unsigned keyword. By convention, this is placed before the type
+- Oddly, the C++ standard explicitly says “a computation involving unsigned operands can never overflow”. This is contrary to general programming consensus that integer overflow encompasses both signed and unsigned use cases (cite). Given that most programmers would consider this overflow, we’ll call this overflow despite the C++ standard’s statements to the contrary.
+- If an unsigned value is out of range, it is divided by one greater than the largest number of the type, and only the remainder kept
+- First, with signed values, it takes a little work to accidentally overflow the top or bottom of the range because those values are far from 0. With unsigned numbers, it is much easier to overflow the bottom of the range, because the bottom of the range is 0, which is close to where the majority of our values are
+- Second, and more insidiously, unexpected behavior can result when you mix signed and unsigned integers. In C++, if a mathematical operation (e.g. arithmetic or comparison) has one signed integer and one unsigned integer, the signed integer will usually be converted to an unsigned integer
+
+Fixed-width integers and size_t
+- C99 defined a set of fixed-width integers (in the stdint.h header) that are guaranteed to be the same size on any architecture.
+- most compilers define and treat std::int8_t and std::uint8_t (and the corresponding fast and least fixed-width types) identically to types signed char and unsigned char respectively. This means these 8-bit types may (or may not) behave differently than the rest of the fixed-width types, which can lead to errors.
+- there is little consensus on integral best practices, Our stance is that it’s better to be correct than fast, and better to fail at compile time than runtime. Therefore, if you need an integral type with a fixed size, we recommend avoiding the fast/least types in favor of the fixed-width types.
+- The answer is that sizeof (and many functions that return a size or length value) return a value of type std::size_t. std::size_t is defined as an unsigned integral type, and it is typically used to represent the size or length of objects.
+- Therefore, the largest object creatable on a system has a size (in bytes) equal to the largest value std::size_t can hold
+
+Introduction to scientific notation
+
+Floating point numbers
+- A floating point type variable is a variable that can hold a number with a fractional component, such as 4320.0, -3.33, or 0.01226
+- The floating part of the name floating point refers to the fact that the decimal point can “float” -- that is, it can support a variable number of digits before and after the decimal point
+- When using floating point literals, always include at least one decimal place (even if the decimal is 0). This helps the compiler understand that the number is a floating point number and not an integer
+- Always make sure the type of your literals match the type of the variables they’re being assigned to or used to initialize. Otherwise an unnecessary conversion will result, possibly with a loss of precision.
+- The precision of a floating point type defines how many significant digits it can represent without information loss
+- When outputting floating point numbers, std::cout has a default precision of 6 -- that is, it assumes all floating point variables are only significant to 6 digits (the minimum precision of a float), and hence it will truncate anything after that
+- Output manipulators alter how data is output, and are defined in the iomanip header
+- Output manipulators (and input manipulators) are sticky -- meaning if you set them, they will remain set
+- When precision is lost because a number can’t be stored precisely, this is called a rounding error
+- Favor double over float unless space is at a premium, as the lack of precision in a float will often lead to inaccuracies.
+- Floating point numbers are tricky to work with due to non-obvious differences between binary (how data is stored) and decimal (how we think) numbers. Consider the fraction 1/10. In decimal, this is easily represented as 0.1, and we are used to thinking of 0.1 as an easily representable number with 1 significant digit. However, in binary, decimal value 0.1 is represented by the infinite sequence: 0.00011001100110011…
+- mathematical operations (such as addition and multiplication) tend to make rounding errors grow. So even though 0.1 has a rounding error in the 17th significant digit, when we add 0.1 ten times, the rounding error has crept into the 16th significant digit. Continued operations would cause this error to become increasingly significant.
+- Rounding errors aren’t the exception -- they’re the norm.
+
+Introduction to if statements
+- A condition (also called a conditional expression) is an expression that evaluates to a Boolean value.
+- The equality operator (==) is used to test whether two values are equal. Operator== returns true if the operands are equal, and false if they are not.
+- The less than operator (<) is used to test whether one value is less than another. Similarly, the greater than operator (>) is used to test whether one value is greater than another
+- non-zero values get converted to Boolean true, and zero-values get converted to Boolean false
+
+Chars
+- The char data type was designed to hold a single character. A character can be a single letter, number, symbol, or whitespace.
+- The char data type is an integral type, meaning the underlying value is stored as an integer. Similar to how a Boolean value 0 is interpreted as false and non-zero is interpreted as true, the integer stored by a char variable are intepreted as an ASCII character.
+
+Introduction to type conversion and static_cast
+- In most cases, C++ will allow us to convert values of one fundamental type to another fundamental type. The process of converting a value from one type to another type is called `type conversion`.
+- When the compiler does type conversion on our behalf without us explicitly asking, we call this `implicit type conversion`
+- Even though it is called a conversion, a type conversion does not actually change the value or type of the value being converted. Instead, the value to be converted is used as input, and the conversion results in a new value of the target type (via direct initialization)
+- Type conversion uses direct initialization to produce a new value of the target type from a value of a different type
+- Explicit type conversion allow us (the programmer) to explicitly tell the compiler to convert a value from one type to another type, and that we take full responsibility for the result of that conversion (meaning that if the conversion results in the loss of value, it’s our fault).
+- To perform an explicit type conversion, in most cases we’ll use the static_cast operator. The syntax for the static cast looks a little funny:
+```
+static_cast<new_type>(expression)
+```
+- Whenever you see C++ syntax (excluding the preprocessor) that makes use of angled brackets (<>), the thing between the angled brackets will most likely be a type. This is typically how C++ deals with code that need a parameterized type.
+- It’s worth noting that the argument to static_cast evaluates as an expression. When we pass in a variable, that variable is evaluated to produce its value, and that value is then converted to the new type. The variable itself is not affected by casting its value to a new type.
+- The static_cast operator doesn’t do any range checking, so if you cast a value to a type whose range doesn’t contain that value, undefined behavior will result.
