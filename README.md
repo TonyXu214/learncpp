@@ -326,3 +326,98 @@ static_cast<new_type>(expression)
 - Whenever you see C++ syntax (excluding the preprocessor) that makes use of angled brackets (<>), the thing between the angled brackets will most likely be a type. This is typically how C++ deals with code that need a parameterized type.
 - It’s worth noting that the argument to static_cast evaluates as an expression. When we pass in a variable, that variable is evaluated to produce its value, and that value is then converted to the new type. The variable itself is not affected by casting its value to a new type.
 - The static_cast operator doesn’t do any range checking, so if you cast a value to a type whose range doesn’t contain that value, undefined behavior will result.
+
+### Chapter 5
+
+Constant variables (named constants)
+- Named constants are constant values that are associated with an identifier. These are also sometimes called symbolic constants, or occasionally just constants.
+- Literal constants are constant values that are not associated with an identifier
+- Const variables must be initialized when you define them, and then that value can not be changed via assignment:
+```
+    const double gravity; // error: const variables must be initialized
+    gravity = 9.9;        // error: const variables can not be changed
+```
+- Note that const variables can be initialized from other variables (including non-const ones)
+- Function parameters can be made constants via the const keyword
+```
+void printInt(const int x)
+{
+    std::cout << x << '\n';
+}
+```
+- Don’t use const when passing by value.
+- we’ll talk about two other ways to pass arguments to functions: pass by reference, and pass by address. When using either of these methods, proper use of const is important.
+- A function’s return value may also be made const
+```
+const int getValue()
+{
+    return 5;
+}
+```
+- For fundamental types, the const qualifier on a return type is simply ignored
+- Don’t use const when returning by value
+- object-like macros with substitution text are also named constants
+- Prefer constant variables to preprocessor macros
+- Constant variables have none of these problems: they follow normal scoping rules, can be seen by the compiler and debugger, and behave consistently (vs. preprocessor macros)
+- Prefer constant variables over object-like macros with substitution text
+- A type qualifier (sometimes called a qualifier for short) is a keyword that is applied to a type that modifies how that type behaves. The const used to declare a constant variable is called a const type qualifier (or const qualifier for short).
+- As of C++23, C++ only has two type qualifiers: const and volatile
+
+Constant expressions, compile-time const, and runtime const
+- as-if rule says that the compiler can modify a program however it likes in order to produce more optimized code, so long as those modifications do not affect a program’s “observable behavior”.
+- A **constant expression** is an expression that can be evaluated by the compiler at compile-time. To be a constant expression, all the values in the expression must be known at compile-time (and all the operators and functions called must support compile-time evaluation)
+- Note that the expression std::cout << x is not a constant expression, because our program can’t output values to the console at compile-time. So this expression will always evaluate at runtime. An expression that must be evaluated at runtime is sometimes called a **runtime expression**
+- A compile-time constant is a constant whose value is known at compile-time. Literals (e.g. ‘1’, ‘2.3’, and “Hello, world!”) are one type of compile-time constant
+- A const variable is a compile-time constant if its initializer is a constant expression
+```
+	const int x { 3 };  // x is a compile-time const
+	const int y { 4 };  // y is a compile-time const
+
+	const int z { x + y }; // x + y is a constant expression, so z is compile-time constant
+```
+- Runtime constants are constants whose initialization values can’t be determined until runtime.
+- Compile-time constants can be used in constant expressions and allow for better optimization.
+- Runtime constants can only be used in non-constant expressions. Their primary use is to ensure an object’s value is not modified.
+
+Constexpr Variables
+```
+int x { 5 };       // not const at all
+const int y { x }; // obviously a runtime const (since initializer is non-const)
+const int z { 5 }; // obviously a compile-time const (since initializer is a constant expression)
+const int w { getValue() }; // not obvious whether this is a runtime or compile-time const
+```
+- A **constexpr** (which is short for “constant expression”) variable can only be a compile-time constant
+- If the initialization value of a constexpr variable is not a constant expression, the compiler will error
+- Any variable that should not be modifiable after initialization and whose initializer is known at compile-time should be declared as constexpr.
+- Any variable that should not be modifiable after initialization and whose initializer is not known at compile-time should be declared as const
+- Caveat: In the future we will discuss some types that are not currently compatible with constexpr (including std::string, std::vector, and other types that use dynamic memory allocation). For constant objects of these types, use const instead
+- Normal function calls are evaluated at runtime, with the supplied arguments being used to initialize the function’s parameters. This means const function parameters are treated as runtime constants, even when the supplied argument is a compile-time constant
+- Because constexpr objects must be initialized with a compile-time constant (not a runtime constant), function parameters cannot be declared as constexpr
+- The compiler is only required to evaluate constant expressions at compile-time in contexts that require a constant expression (such as the initializer of a compile-time constant):
+```
+constexpr int x { 3 + 4 }; // 3 + 4 will always evaluate at compile time
+const int x { 3 + 4 };     // 3 + 4 will always evaluate at compile time
+int x { 3 + 4 }; // 3 + 4 may evaluate at compile-time or runtime
+```
+- The answer is generally “yes”. Compilers have long been able to optimize constant subexpressions, even when the full expression is a runtime expression. This optimization process is called “constant folding”.
+```
+std::cout << 3 + 4 << '\n'; // this is a runtime expression but 3 + 4 may still get optimized at compile time
+```
+
+Literal
+- Literals are sometimes called **literal constants** because their meaning cannot be redefined (5 always means the integral value 5)
+- Just like objects have a type, all literals have a type. The type of a literal is deduced from the literal’s value. For example, a literal that is a whole number (e.g. 5) is deduced to be of type int
+- If the default type of a literal is not as desired, you can change the type of a literal by adding a suffix
+- Most of the suffixes are not case sensitive. Because lower-case L can look like numeric 1 in some fonts, some developers prefer to use upper-case literals
+- Unlike most other literals (which are values, not objects), C-style string literals are const objects that are created at the start of the program and are guaranteed to exist for the entirety of the program
+- Unlike C-style string literals, std::string and std::string_view create temporary objects. These temporary objects must be used immediately, as they are destroyed at the end of the full expression in which they are created
+- Avoid magic numbers in your code (use constexpr variables instead)
+
+The conditional operator
+- The `conditional operator` (?:) (also sometimes called the arithmetic if operator) is a ternary operator (an operator that takes 3 operands).
+- Parenthesize the entire conditional operator when used in a compound expression.
+- For readability, parenthesize the condition if it contains any operators (other than the function call operator)
+- To comply with C++’s type checking rules, one of the following must be true:
+  - The type of the second and third operand must match.
+  - The compiler must be able to find a way to convert one or both of the second and third operands to matching types. The conversion rules the compiler uses are fairly complex and may yield surprising results in some cases
+
