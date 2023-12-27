@@ -497,4 +497,33 @@ constexpr int someFunction(bool b)
 - This is legal as long as someFunction(false) is never called in a constant expression
 - The C++ standard says that a constexpr function must return a constexpr value for at least one set of arguments, otherwise it is technically ill-formed
 
+Introduction to std::string
+- To read a full line of input into a string, you’re better off using the std::getline() function instead. std::getline() requires two arguments: the first is std::cin, and the second is your string variable
+- C++ also supports input manipulators, which alter the way that input is accepted. The std::ws input manipulator tells std::cin to ignore any leading whitespace before extraction.
+- When you enter a value using operator>>, std::cin not only captures the value, it also captures the newline character ('\n') that occurs when you hit the enter key. So when we type 2 and then hit enter, std::cin captures the string "2\n" as input. It then extracts the value 2 to variable choice, leaving the newline character behind for later. Then, when std::getline() goes to extract text to name, it sees "\n" is already waiting in std::cin, and figures we must have previously entered an empty string!
+- If using std::getline() to read strings, use std::cin >> std::ws input manipulator to ignore leading whitespace. This needs to be done for each std::getline() call, as std::ws is not preserved across calls
+- Using the extraction operator (>>) with std::cin ignores leading whitespace. It stops extracting when encountering non-leading whitespace.
+- std::getline() does not ignore leading whitespace unless you use input manipulator std::ws. It stops extracting when encountering a newline
+- The length() function isn’t a normal standalone function -- it’s a special type of function that is nested within std::string called a member function.
+- Also note that std::string::length() returns an unsigned integral value (most likely of type size_t)
+- With normal functions, we call function(object). With member functions, we call object.function()
+- Whenever a std::string is initialized, a copy of the string used to initialize it is made. Making copies of strings is expensive, so care should be taken to minimize the number of copies made.
+- When a std::string is passed to a function by value, the std::string function parameter must be instantiated and initialized with the argument. This results in an expensive copy. We’ll discuss what to do instead (use std::string_view)
+- Do not pass std::string by value, as it makes an expensive copy
+- In most cases, use a std::string_view parameter instead
+- When a function returns by value to the caller, the return value is normally copied from the function back to the caller. So you might expect that you should not return std::string by value, as doing so would return an expensive copy of a std::string.
+  - However, as a rule of thumb, it is okay to return a std::string by value when the expression of the return statement resolves to any of the following:
+    - A local variable of type std::string.
+    - A std::string that has been returned by value from a function call or operator.
+    - A std::string that is created as part of the return statement.
+- If returning a C-style string literal, use a std::string_view return type instead
+- you can also use the std::ssize() function to get the length of a std::string as a signed integral value
+- We can create string literals with type std::string by using a s suffix after the double-quoted string literal
+```
+    using namespace std::string_literals; // easy access to the s suffix
+
+    std::cout << "foo\n";   // no suffix is a C-style string literal
+    std::cout << "goo\n"s;  // s suffix is a std::string literal
+```
+- If you try to define a constexpr std::string, your compiler will probably generate an error
 
