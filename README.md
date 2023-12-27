@@ -421,3 +421,80 @@ The conditional operator
   - The type of the second and third operand must match.
   - The compiler must be able to find a way to convert one or both of the second and third operands to matching types. The conversion rules the compiler uses are fairly complex and may yield surprising results in some cases
 
+Inline functions and Variables
+- Write the code as part of an existing function (called writing code “in-place” or “inline”).
+- When a call to min() is encountered, the CPU must store the address of the current instruction it is executing (so it knows where to return to later) along with the values of various CPU registers (so they can be restored upon returning). Then parameters x and y must be instantiated and then initialized. Then the execution path has to jump to the code in the min() function. When the function ends, the program has to jump back to the location of the function call, and the return value has to be copied so it can be output.
+- For functions that are large and/or perform complex tasks, the overhead of the function call is typically insignificant compared to the amount of time the function takes to run. However, for small functions (such as min() above), the overhead costs can be larger than the time needed to actually execute the function’s code! In cases where a small function is called often, using a function can result in a significant performance penalty over writing the same code in-place
+- Fortunately, the C++ compiler has a trick that it can use to avoid such overhead cost: **Inline expansion** is a process where a function call is replaced by the code from the called function’s definition
+- if the body of the function being expanded takes more instructions than the function call being replaced, then each inline expansion will cause the executable to grow larger. Larger executables tend to be slower (due to not fitting as well in memory caches)
+- Modern optimizing compilers make the decision about when functions should be expanded inline
+- A function that is declared using the inline keyword is called an **inline function**
+```
+inline int min(int x, int y) // inline keyword means this function is an inline function
+{
+    return (x < y) ? x : y;
+}
+```
+- in modern C++, the inline keyword is no longer used to request that a function be expanded inline
+- The inline keyword is defined at the wrong level of granularity. We use the inline keyword on a function definition, but inline expansion is actually determined per function call.
+- Do not use the inline keyword to request inline expansion for your functions
+- In modern C++, the term inline has evolved to mean “multiple definitions are allowed”. Thus, an inline function is one that is allowed to be defined in multiple files.
+- Inline functions have two primary requirements:
+  - The compiler needs to be able to see the full definition of an inline function in each translation unit where the function is used (a forward declaration will not suffice on its own). The definition can occur after the point of use if a forward declaration is also provided.
+  - Every definition for an inline function must be identical, otherwise undefined behavior will result
+- The compiler needs to be able to see the full definition of an inline function wherever it is used, and all such definitions must be identical (or undefined behavior will result).
+- This is particularly useful for **header-only libraries**, which are one or more header files that implement some capability (no .cpp files are included). Header-only libraries are popular because there are no source files that need to be added to a project to use them and nothing that needs to be linked. You simply #include the header-only library and then can use it
+- For the most part, you should not mark your functions or variables as inline unless you are defining them in a header file (and they are not already implicitly inline)
+- Avoid the use of the inline keyword unless you have a specific, compelling reason to do so (e.g. you’re defining those functions or variables in a header file).
+- C++17 introduces inline variables, which are variables that are allowed to be defined in multiple files
+
+Constexpr and consteval functions
+- constexpr keyword, which we used to create compile-time (**symbolic**) constants
+- A **constexpr function** is a function whose return value may be computed at compile-time.
+- To be eligible for compile-time evaluation, a function must have a constexpr return type and not call any non-constexpr functions when evaluated at compile-time. Additionally, a call to the function must have constexpr arguments
+- Constexpr functions can also be evaluated at runtime
+  - occurs when args are not constexpr
+- a constexpr function that is eligible for compile-time evaluation must be evaluated at compile-time if the return value is used where a constant expression is required. Otherwise, the compiler is free to evaluate the function at either compile-time or runtime.
+- Unless you have a specific reason not to, a function that can be made constexpr generally should be made constexpr
+- we can force a constexpr function that is eligible to be evaluated at compile-time to actually evaluate at compile-time by ensuring the return value is used where a constant expression is required. This needs to be done on a per-call basis.
+- The most common way to do this is to use the return value to initialize a constexpr variable
+- C++20 introduces the keyword **consteval**, which is used to indicate that a function must evaluate at compile-time, otherwise a compile error will result. Such functions are called **immediate functions**
+- Use consteval if you have a function that must run at compile-time for some reason (e.g. performance).
+- The downside of consteval functions is that such functions can’t evaluate at runtime, making them less flexible than constexpr functions, which can do either. Therefore, it would still be useful to have a convenient way to force constexpr functions to evaluate at compile-time (even when the return value is being used where a constant expression is not required), so that we could have compile-time evaluation when possible, and runtime evaluation when we can’t
+- This works because consteval functions require constant expressions as arguments -- therefore, if we use the return value of a constexpr function as an argument to a consteval function, the constexpr function must be evaluated at compile-time
+- Note that the consteval function returns by value. While this might be inefficient to do at runtime (if the value was some type that is expensive to copy, e.g. std::string), in a compile-time context, it doesn’t matter because the entire call to the consteval function will simply be replaced with the calculated return value
+- Because constexpr functions may be evaluated at compile-time, the compiler must be able to see the full definition of the constexpr function at all points where the function is called. A forward declaration will not suffice, even if the actual function definition appears later in the same compilation unit.
+- This means that a constexpr function called in multiple files needs to have its definition included into each such file -- which would normally be a violation of the one-definition rule. To avoid such problems, constexpr functions are implicitly inline, which makes them exempt from the one-definition rule.
+- As a result, constexpr functions are often defined in header files, so they can be #included into any .cpp file that requires the full definition.
+- Consteval functions are also implicitly inline for the same reasons
+- The compiler must be able to see the full definition of a constexpr or consteval function, not just a forward declaration.
+- Constexpr/consteval functions used in a single source file (.cpp) can be defined in the source file above where they are used.
+- Constexpr/consteval functions used in multiple source files should be defined in a header file so they can be included into each source file.
+- The parameters of a constexpr function are not constexpr (and thus cannot be used in constant expressions). Such parameters can be declared as const (in which case they are treated as runtime constants), but not constexpr
+- However, an exception is made in one case: a constexpr function can pass those parameters as arguments to another constexpr function, and that subsequent constexpr function can be resolved at compile-time. This allows constexpr functions to still be resolved at compile-time when they call other constexpr functions (including themselves recursively)
+- Calling a non-constexpr function is allowed so that a constexpr function can do something like this:
+```
+#include <type_traits> // for std::is_constant_evaluated
+
+constexpr int someFunction()
+{
+    if (std::is_constant_evaluated()) // if compile-time evaluation
+        return someConstexprFcn();    // calculate some value at compile time
+    else                              // runtime evaluation
+        return someNonConstexprFcn(); // calculate some value at runtime
+}
+```
+- Now consider this variant:
+```
+constexpr int someFunction(bool b)
+{
+    if (b)
+        return someConstexprFcn();
+    else
+        return someNonConstexprFcn();
+}
+```
+- This is legal as long as someFunction(false) is never called in a constant expression
+- The C++ standard says that a constexpr function must return a constexpr value for at least one set of arguments, otherwise it is technically ill-formed
+
+
