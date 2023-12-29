@@ -527,3 +527,18 @@ Introduction to std::string
 ```
 - If you try to define a constexpr std::string, your compiler will probably generate an error
 
+Introduction to std::string_view
+- std::string_view provides read-only access to an existing string (a C-style string, a std::string, or another std::string_view) without making a copy.
+- Prefer std::string_view over std::string when you need a read-only string, especially for function parameters.
+- A std::string_view object can be initialized with a C-style string, a std::string, or another std::string_view:
+- Because std::string makes a copy of its initializer (which is expensive), C++ won’t allow implicit conversion of a std::string_view to a std::string
+- However, if this is desired, we have two options:
+  - Explicitly create a std::string with a std::string_view initializer (which is allowed, since this will rarely be done unintentionally)
+  - Convert an existing std::string_view to a std::string using static_cast
+- Assigning a new string to a std::string_view causes the std::string_view to view the new string. It does not modify the prior string being viewed in any way
+- We can create string literals with type std::string_view by using a sv suffix after the double-quoted string literal.
+- Unlike std::string, std::string_view has full support for constexpr:
+
+std::string_view (part 2)
+- std::string is an owner
+
