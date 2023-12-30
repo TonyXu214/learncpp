@@ -541,4 +541,27 @@ Introduction to std::string_view
 
 std::string_view (part 2)
 - std::string is an owner
+- An initialized object has no control over what happens to the initialization value after initialization is finished.
+- std::string_view is a viewer
+- A view is dependent on the object being viewed. If the object being viewed is modified or destroyed while the view is still being used, unexpected or undefined behavior will result.
+- A std::string_view that is viewing a string that has been destroyed is sometimes called a **dangling** view
+- Return values are temporary objects that are destroyed at the end of the full expression containing the function call. We must either use this return value immediately, or copy it to use later.
+- But std::string_view doesn’t make copies. Instead, it creates a view to the temporary return value, which is then destroyed. That leaves our std::string_view dangling (viewing an invalid object), and printing the view results in undefined behavior
+- Do not initialize a std::string_view with a std::string literal, as this will leave the std::string_view dangling.
+- It is okay to initialize a std::string_view with a C-style string literal or a std::string_view literal. It’s also okay to initialize a std::string_view with a C-style string object, a std::string object, or a std::string_view object, as long as that string object outlives the view.
+- When a std::string is modified, all views into that std::string are invalidated, meaning those views are now invalid. Using an invalidated view will result in undefined behavior.
+- std::string_view can be used as the return value of a function. However, this is often dangerous.
+- Because local variables are destroyed at the end of the function, returning a std::string_view to a local variable will result in the returned std::string_view being invalid, and further use of that std::string_view will result in undefined
+- because C-style string literals exist for the entire program, it’s fine to return C-style string literals from a function that has a return type of std::string_view
+- If an argument is a temporary that is destroyed at the end of the full expression containing the function call, the returned std::string_view must be used immediately, as it will be left dangling after the temporary is destroyed.
+- Because std::string_view is a view, it contains functions that let us modify our view by “closing the curtains”. This does not modify the string being viewed in any way, just the view itself.
+  - The remove_prefix() member function removes characters from the left side of the view.
+  - The remove_suffix() member function removes characters from the right side of the view.
+- Unlike real curtains, once remove_prefix() and remove_suffix() have been called, the only way to reset the view is by reassigning the source string to it again
+- This brings up an important use of std::string_view. While std::string_view can be used to view an entire string without making a copy, they are also useful when we want to view a substring without making a copy.
+- The ability to view just a substring of a larger string comes with one consequence of note: a std::string_view may or may not be null-terminated
+- A C-style string literal and a std::string are always null-terminated.
+- A std::string_view may or may not be null-terminated.
+- In almost all cases, this doesn’t matter -- a std::string_view keeps track of the length of the string or substring it is viewing, so it doesn’t need the null-terminator. Converting a std::string_view to a std::string will work regardless of whether or not the std::string_view is null-terminated
+- If you have a non-null-terminated std::string_view and you need a null-terminated string for some reason, convert the std::string_view into a std::string.
 
