@@ -565,3 +565,104 @@ std::string_view (part 2)
 - In almost all cases, this doesn’t matter -- a std::string_view keeps track of the length of the string or substring it is viewing, so it doesn’t need the null-terminator. Converting a std::string_view to a std::string will work regardless of whether or not the std::string_view is null-terminated
 - If you have a non-null-terminated std::string_view and you need a null-terminated string for some reason, convert the std::string_view into a std::string.
 
+### Chapter 6
+
+Operator precedence and associativity
+
+- the operator’s **associativity** tells the compiler whether to evaluate the operators from left to right or from right to left.
+- The C++ standard uses the term **value computation** to mean the execution of operators in an expression to produce a value.
+- The precedence and associativity rules generally determine the order of value computation (of operators).
+- Operands, function arguments, and subexpressions may be evaluated in any order.
+- Ensure that the expressions (or function calls) you write are not dependent on operand (or argument) evaluation order.
+
+Arithmetic operators
+- unary operators are operators that only take one operand
+- Do not confuse the unary minus operator with the binary subtraction operator
+- If either (or both) of the operands are floating point values, the division operator performs floating point division. Floating point division returns a floating point value, and the fraction is kept
+- If both of the operands are integers, the division operator performs integer division instead. Integer division drops any fractions and returns an integer value
+- Integer division with a divisor of 0 will cause undefined behavior, as the results are mathematically undefined
+- The result of dividing by floating point value 0.0 is implementation-defined (meaning the behavior is determined by the compiler/architecture).
+
+Remainder and Exponentiation
+- The remainder operator can also work with negative operands. x % y always returns results with the sign of x
+- if you’re going to compare the result of a remainder operation, it’s better to compare against 0, which does not have positive/negative number issues
+- Prefer to compare the result of the remainder operator (operator%) against 0 if possible
+- To do exponents in C++, #include the <cmath> header, and use the pow() function
+- Note that the parameters (and return value) of function pow() are of type double
+
+Increment/decrement operators, and side effects
+-  Note that the postfix version takes a lot more steps, and thus may not be as performant as the prefix version.
+- Favor the prefix versions, as they are more performant and less likely to cause surprises.
+- A function or expression is said to have a side effect if it has some observable effect beyond producing a return value
+```
+x = 5; // the assignment operator has side effect of changing value of x
+++x; // operator++ has side effect of incrementing x
+std::cout << x; // operator<< has side effect of modifying the state of the console
+```
+- In many cases, C++ also does not specify when the side effects of operators must be applied. This can lead to undefined behavior in cases where an object with a side effect applied is used more than once in the same statement.
+- These problems can generally all be avoided by ensuring that any variable that has a side-effect applied is used no more than once in a given statement
+- C++ does not define the order of evaluation for function arguments or the operands of operators.
+
+The comma operator
+- The comma operator (,) allows you to evaluate multiple expressions wherever a single expression is allowed. The comma operator evaluates the left operand, then the right operand, and then returns the result of the right operand
+- Note that comma has the lowest precedence of all the operators, even lower than assignment. Because of this, the following two lines of code do different things:
+```
+z = (a, b); // evaluate (a, b) first to get result of b, then assign that value to variable z.
+z = a, b; // evaluates as "(z = a), b", so z gets assigned the value of a, and b is evaluated and discarded.
+```
+- Most programmers do not use the comma operator at all, with the single exception of inside for loops, where its use is fairly common
+- Avoid using the comma operator, except within for loops.
+- In C++, the comma symbol is often used as a separator, and these uses do not invoke the comma operator. Some examples of separator commas
+```
+void foo(int x, int y) // Separator comma used to separate parameters in function definition
+{
+    add(x, y); // Separator comma used to separate arguments in function call
+    constexpr int z{ 3 }, w{ 5 }; // Separator comma used to separate multiple variables being defined on the same line (don't do this)
+}
+```
+
+Relational operators and floating point comparisons
+- By default, conditions in an if statement or conditional operator (and a few other places) evaluate as Boolean values
+- Don’t add unnecessary == or != to conditions. It makes them harder to read without offering any additional value.
+- Comparing floating point values using any of the relational operators can be dangerous. This is because floating point values are not precise
+- Because even the smallest rounding error will cause two floating point numbers to not be equal, operator== is at high risk for returning false when a true might be expected
+- There is one notable exception case to the above: it is okay to compare a low-precision (few significant digits) floating point literal to the same literal value of the same type
+```
+if (someFcn() == 0.0) // okay if someFcn() returns 0.0 as a literal only
+    // do something
+```
+- if we have a const or constexpr floating point variable that we can guarantee is a literal, it is safe to do a direct comparison
+```
+constexpr double gravity { 9.8 }
+if (gravity == 9.8) // okay if gravity was initialized with a literal
+    // we're on earth
+```
+- Why does this work? Consider the double literal 0.0. This literal has some specific and unique representation in memory
+- It is okay to compare a low-precision (few significant digits) floating point literal to the same literal value of the same type.
+- The most common method of doing floating point equality involves using a function that looks to see if two numbers are almost the same. If they are “close enough”, then we call them equal. The value used to represent “close enough” is traditionally called **epsilon**
+- instead of epsilon being an absolute number, epsilon is now relative to the magnitude of a or b
+```
+// Return true if the difference between a and b is within epsilon percent of the larger of a and b
+bool approximatelyEqualRel(double a, double b, double relEpsilon)
+{
+	return (std::abs(a - b) <= (std::max(std::abs(a), std::abs(b)) * relEpsilon));
+}
+```
+- One way to avoid this is to use both an absolute epsilon (as we did in the first approach) and a relative epsilon (as we did in Knuth’s approach):
+```
+// Return true if the difference between a and b is less than or equal to absEpsilon, or within relEpsilon percent of the larger of a and b
+bool approximatelyEqualAbsRel(double a, double b, double absEpsilon, double relEpsilon)
+{
+    // Check if the numbers are really close -- needed when comparing numbers near zero.
+    if (std::abs(a - b) <= absEpsilon)
+        return true;
+
+    // Otherwise fall back to Knuth's algorithm
+    return approximatelyEqualRel(a, b, relEpsilon);
+}
+```
+- In this algorithm, we first check if a and b are close together in absolute terms, which handles the case where a and b are both close to zero. The absEpsilon parameter should be set to something very small (e.g. 1e-12). If that fails, then we fall back to Knuth’s algorithm, using the relative epsilon.
+
+Logical operators
+- If logical NOT is intended to operate on the result of other operators, the other operators and their operands need to be enclosed in parentheses.
+- In this case, the logical AND operator will go ahead and return false immediately without even evaluating the right operand! This is known as short circuit evaluation, and it is done primarily for optimization purposes.
