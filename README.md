@@ -666,3 +666,9 @@ bool approximatelyEqualAbsRel(double a, double b, double absEpsilon, double relE
 Logical operators
 - If logical NOT is intended to operate on the result of other operators, the other operators and their operands need to be enclosed in parentheses.
 - In this case, the logical AND operator will go ahead and return false immediately without even evaluating the right operand! This is known as short circuit evaluation, and it is done primarily for optimization purposes.
+- Short circuit evaluation may cause Logical OR and Logical AND to not evaluate the right operand. Avoid using expressions with side effects in conjunction with these operators.
+- The Logical OR and logical AND operators are an exception to the rule that the operands may evaluate in any order, as the standard explicitly states that the left operand must evaluate first.
+- Only the built-in versions of these operators perform short-circuit evaluation. If you overload these operators to make them work with your own types, those overloaded operators will not perform short-circuit evaluation.
+- logical AND has higher precedence than logical OR
+- When mixing logical AND and logical OR in a single expression, explicitly parenthesize each operation to ensure they evaluate how you intend.
+
