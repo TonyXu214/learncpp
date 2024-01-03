@@ -672,3 +672,40 @@ Logical operators
 - logical AND has higher precedence than logical OR
 - When mixing logical AND and logical OR in a single expression, explicitly parenthesize each operation to ensure they evaluate how you intend.
 
+### Chapter 7
+
+Compound statements (blocks)
+- A compound statement (also called a block, or block statement) is a group of zero or more statements that is treated by the compiler as if it were a single statement.
+- Blocks begin with a { symbol, end with a } symbol, with the statements to be executed being placed in between. Blocks can be used anywhere a single statement is allowed. No semicolon is needed at the end of a block;
+```
+int add(int x, int y)
+{ // start block
+    return x + y;
+} // end block (no semicolon)
+
+int main()
+{ // start block
+
+    // multiple statements
+    int value {}; // this is initialization, not a block
+    add(3, 4);
+
+    return 0;
+
+} // end block (no semicolon)
+```
+- When blocks are nested, the enclosing block is typically called the outer block and the enclosed block is called the inner block or nested block.
+- The nesting level (also called the nesting depth) of a function is the maximum number of nested blocks you can be inside at any point in the function (including the outer block)
+- Keep the nesting level of your functions to 3 or less. If your function has a need for more nested levels, consider refactoring your function into sub-functions.
+- C++ allows us to define our own namespaces via the namespace keyword. Namespaces that you create in your own programs are casually called user-defined namespaces (though it would be more accurate to call them program-defined namespaces).
+```
+namespace namespaceIdentifier
+{
+    // content of namespace here
+}
+```
+- A namespace must be defined either in the global scope, or inside another namespace
+- The best way to tell the compiler to look in a particular namespace for an identifier is to use the scope resolution operator (::). The scope resolution operator tells the compiler that the identifier specified by the right-hand operand should be looked for in the scope of the left-hand operand.
+- The scope resolution operator can also be used in front of an identifier without providing a namespace name (e.g. ::doSomething). In such a case, the identifier (e.g. doSomething) is looked for in the global namespace.
+- If an identifier inside a namespace is used and no scope resolution is provided, the compiler will first try to find a matching declaration in that same namespace. If no matching identifier is found, the compiler will then check each containing namespace in sequence to see if a match is found, with the global namespace being checked last
+
