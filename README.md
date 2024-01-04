@@ -708,4 +708,11 @@ namespace namespaceIdentifier
 - The best way to tell the compiler to look in a particular namespace for an identifier is to use the scope resolution operator (::). The scope resolution operator tells the compiler that the identifier specified by the right-hand operand should be looked for in the scope of the left-hand operand.
 - The scope resolution operator can also be used in front of an identifier without providing a namespace name (e.g. ::doSomething). In such a case, the identifier (e.g. doSomething) is looked for in the global namespace.
 - If an identifier inside a namespace is used and no scope resolution is provided, the compiler will first try to find a matching declaration in that same namespace. If no matching identifier is found, the compiler will then check each containing namespace in sequence to see if a match is found, with the global namespace being checked last
+- All declarations within the namespace are considered part of the namespace
+- The standard library makes extensive use of this feature, as each standard library header file contains its declarations inside a namespace std block contained within that header file.
+- Note that this capability also means you could add your own functionality to the std namespace. Doing so causes undefined behavior most of the time, because the std namespace has a special rule prohibiting extension from user code
+- Do not add custom functionality to the std namespace.
+- Namespaces can be nested inside other namespaces.
+- Because typing the qualified name of a variable or function inside a nested namespace can be painful, C++ allows you to create namespace aliases, which allow us to temporarily shorten a long sequence of namespaces into something shorter
+- In general, you should avoid deeply nested namespaces.
 

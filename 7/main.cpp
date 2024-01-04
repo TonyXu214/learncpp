@@ -8,6 +8,16 @@ void print() // lives in global namespace
 
 namespace Baz
 {
+    namespace Tony
+    {
+        void doo()
+        {
+            std::cout << "baz tony doo" << '\n';
+        }
+    }
+
+    void doo();
+
     void print()
     {
         std::cout << "in baz" << '\n';
@@ -17,6 +27,14 @@ namespace Baz
     {
         print();
         ::print();
+    }
+}
+
+namespace Baz::Tony
+{
+    void blah()
+    {
+        std::cout << "baz tony blah" << '\n';
     }
 }
 
@@ -32,7 +50,12 @@ int main()
 {
     // std::cout << test::doSomething() << '\n';
     // ::print();
+    namespace a = Baz::Tony;
     Baz::dos();
+    Baz::doo();
+    Baz::Tony::doo();
+    Baz::Tony::blah();
+    a::doo();
     std::cout << math::one() << '\n';
     return 0;
 }
