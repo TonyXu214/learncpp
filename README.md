@@ -716,3 +716,36 @@ namespace namespaceIdentifier
 - Because typing the qualified name of a variable or function inside a nested namespace can be painful, C++ allows you to create namespace aliases, which allow us to temporarily shorten a long sequence of namespaces into something shorter
 - In general, you should avoid deeply nested namespaces.
 
+Local variables
+- Local variables have block scope, which means they are in scope from their point of definition to the end of the block they are defined within
+- A variable’s storage duration (usually just called duration) determines what rules govern when and how a variable will be created and destroyed.
+- For example, local variables have automatic storage duration, which means they are created at the point of definition and destroyed at the end of the block they are defined in.
+- For this reason, local variables are sometimes called automatic variables
+- Identifiers have another property named linkage. An identifier’s linkage determines whether other declarations of that name refer to the same object or not.
+- Local variables have no linkage, which means that each declaration refers to a unique object.
+- Scope and linkage may seem somewhat similar. However, scope defines where a single declaration can be seen and used. Linkage defines whether multiple declarations refer to the same object or not
+- Variables should be defined in the most limited scope
+- Define variables in the most limited existing scope. Avoid creating new blocks whose only purpose is to limit the scope of variables.
+- A variable’s scope determines where the variable is accessible. Duration defines the rules that govern when a variable is created and destroyed. A variable’s lifetime is the actual time between its creation and destruction.
+
+Introduction to global Variables
+- In C++, variables can also be declared outside of a function. Such variables are called global variables
+- By convention, global variables are declared at the top of a file, below the includes, in the global namespace
+- Identifiers declared in the global namespace have global namespace scope (commonly called global scope, and sometimes informally called file scope), which means they are visible from the point of declaration until the end of the file in which they are declared
+- Global variables are created when the program starts, and destroyed when it ends. This is called static duration. Variables with static duration are sometimes called static variables.
+- By convention, some developers prefix non-const global variable identifiers with “g” or “g_” to indicate that they are global. This prefix serves several purposes
+- Consider using a “g” or “g_” prefix when naming non-const global variables, to help differentiate them from local variables and function parameters.
+- Unlike local variables, which are uninitialized by default, variables with static duration are zero-initialized by default.
+- Just like local variables, global variables can be constant. As with all constants, constant global variables must be initialized
+- what happens when we have a variable inside a nested block that has the same name as a variable in an outer block? When this happens, the nested variable “hides” the outer variable in areas where they are both in scope. This is called name hiding or shadowing
+- local variables with the same name as a global variable will shadow the global variable wherever the local variable is in scope:
+- because global variables are part of the global namespace, we can use the scope operator (::) with no prefix to tell the compiler we mean the global variable instead of the local variable
+- Shadowing of local variables should generally be avoided, as it can lead to inadvertent errors where the wrong variable is used or modified
+
+Internal Linkage
+- Global variable and functions identifiers can have either internal linkage or external linkage
+- An identifier with internal linkage can be seen and used within a single translation unit, but it is not accessible from other translation units (that is, it is not exposed to the linker)
+- This means that if two source files have identically named identifiers with internal linkage, those identifiers will be treated as independent (and do not result in an ODR violation for having duplicate definitions).
+- Global variables with internal linkage are sometimes called internal variables
+- To make a non-constant global variable internal, we use the static keyword
+- Const and constexpr global variables have internal linkage by default (and thus don’t need the static keyword -- if it is used, it will be ignored).
