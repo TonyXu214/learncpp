@@ -1,7 +1,7 @@
-# learncpp
-Exercises from https://www.learncpp.com/
+# learncpp Exercises from https://www.learncpp.com/
 
 ## Notes
+
 ### Chapter 0
 Build Configuration
 - Add -ggdb to the command line when debugging and -O2 -DNDEBUG for release builds.
@@ -749,3 +749,42 @@ Internal Linkage
 - Global variables with internal linkage are sometimes called internal variables
 - To make a non-constant global variable internal, we use the static keyword
 - Const and constexpr global variables have internal linkage by default (and thus don’t need the static keyword -- if it is used, it will be ignored).
+- Functions default to external linkage (which we’ll cover in the next lesson), but can be set to internal linkage via the static keyword
+- It’s worth noting that internal objects (and functions) that are defined in different files are considered to be independent entities (even if their names and types are identical), so there is no violation of the one-definition rule.
+- In modern C++, use of the static keyword for giving identifiers internal linkage is falling out of favor. Unnamed namespaces can give internal linkage to a wider range of identifiers (e.g. type identifiers), and they are better suited for giving many identifiers internal linkage
+- Give identifiers internal linkage when you have an explicit reason to disallow access from other files.
+- Consider giving all identifiers you don’t want accessible to other files internal linkage (use an unnamed namespace for this)
+- An identifier with external linkage can be seen and used both from the file in which it is defined, and from other code files (via a forward declaration). In this sense, identifiers with external linkage are truly “global” in that they can be used anywhere in your program!
+- functions have external linkage by default.
+- In order to call a function defined in another file, you must place a forward declaration for the function in any other files wishing to use the function. The forward declaration tells the compiler about the existence of the function, and the linker connects the function calls to the actual function definition
+- Global variables with external linkage are sometimes called external variables. To make a global variable external (and thus accessible by other files), we can use the extern keyword to do so
+- Non-const global variables are external by default (if used, the extern keyword will be ignored)
+- To actually use an external global variable that has been defined in another file, you also must place a forward declaration for the global variable in any other files wishing to use the variable. For variables, creating a forward declaration is also done via the extern keyword (with no initialization value)
+- Note that the extern keyword has different meanings in different contexts. In some contexts, extern means “give this variable external linkage”. In other contexts, extern means “this is a forward declaration for an external variable that is defined somewhere else”.
+- If you want to define an uninitialized non-const global variable, do not use the extern keyword, otherwise C++ will think you’re trying to make a forward declaration for the variable.
+- Although constexpr variables can be given external linkage via the extern keyword, they can not be forward declared as constexpr. This is because the compiler needs to know the value of the constexpr variable (at compile time). If that value is defined in some other file, the compiler has no visibility on what value was defined in that other file.
+- Note that function forward declarations don’t need the extern keyword -- the compiler is able to tell whether you’re defining a new function or making a forward declaration based on whether you supply a function body or not. Variables forward declarations do need the extern keyword to help differentiate uninitialized variables definitions from variable forward declarations (they look otherwise identical)
+```
+// non-constant
+int g_x; // variable definition (can have initializer if desired)
+extern int g_x; // forward declaration (no initializer)
+
+// constant
+extern const int g_y { 1 }; // variable definition (const requires initializers)
+extern const int g_y; // forward declaration (no initializer)
+```
+```
+// External global variable definitions:
+int g_x;                       // defines non-initialized external global variable (zero initialized by default)
+extern const int g_x{ 1 };     // defines initialized const external global variable
+extern constexpr int g_x{ 2 }; // defines initialized constexpr external global variable
+
+// Forward declarations
+extern int g_y;                // forward declaration for non-constant global variable
+extern const int g_y;          // forward declaration for const global variable
+extern constexpr int g_y;      // not allowed: constexpr variables can't be forward declared
+```
+- Scope determines where a variable is accessible. Duration determines when a variable is created and destroyed. Linkage determines whether the variable can be exported to another file or not.
+- Global variables have global scope (a.k.a. file scope), which means they can be accessed from the point of declaration to the end of the file in which they are declared.
+- Global variables have static duration, which means they are created when the program is started, and destroyed when it ends.
+- Global variables can have either internal or external linkage, via the static and extern keywords respectively.
