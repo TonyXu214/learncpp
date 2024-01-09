@@ -788,3 +788,16 @@ extern constexpr int g_y;      // not allowed: constexpr variables can't be forw
 - Global variables have global scope (a.k.a. file scope), which means they can be accessed from the point of declaration to the end of the file in which they are declared.
 - Global variables have static duration, which means they are created when the program is started, and destroyed when it ends.
 - Global variables can have either internal or external linkage, via the static and extern keywords respectively.
+
+Why (non-const) global variables are evil
+- Use local variables instead of global variables whenever possible.
+- Initialization of static variables (which includes global variables) happens as part of program startup, before execution of the main function. This proceeds in two phases
+- The first phase is called static initialization. In the static initialization phase, global variables with constexpr initializers (including literals) are initialized to those values. Also, global variables without initializers are zero-initialized
+- The second phase is called dynamic initialization. This phase is more complex and nuanced, but the gist of it is that global variables with non-constexpr initializers are initialized.
+- Within a single file, for each phase, global variables are generally initialized in order of definition (there are a few exceptions to this rule for the dynamic initialization phase). Given this, you need to be careful not to have variables dependent on the initialization value of other variables that won’t be initialized until later
+- Much more of a problem, the order of initialization across different files is not defined
+- Dynamic initialization of global variables causes a lot of problems in C++. Avoid dynamic initialization whenever possible.
+- As a rule of thumb, any use of a global variable should meet at least the following two criteria: There should only ever be one of the thing the variable represents in your program, and its use should be ubiquitous throughout your program.
+- Put all globals in a namespace
+- instead of allowing direct access to the global variable, it’s a better practice to “encapsulate” the variable. Make sure the variable can only be accessed from within the file it’s declared in, e.g. by making the variable static or const, then provide external global “access functions” to work with the variable. T
+-
