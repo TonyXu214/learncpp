@@ -822,4 +822,59 @@ Scope, duration, and linkage summary
 - When used as part of an identifier declaration, the static and extern keywords are called storage class specifiers
 <img width="1448" alt="Screenshot 2024-01-11 at 10 40 50 PM" src="https://github.com/TonyXu214/learncpp/assets/13933543/d65edac7-7657-486d-b9c9-cdda7981de52">
 <img width="1337" alt="Screenshot 2024-01-11 at 10 40 59 PM" src="https://github.com/TonyXu214/learncpp/assets/13933543/065aa2f9-e5d8-493f-9a2f-31a537104ece">
+- A **qualified name** is a name that includes an associated scope. Most often, names are qualified with a namespace using the scope resolution operator (::)
+```
+std::cout // identifier cout is qualified by namespace std
+::foo // identifier foo is qualified by the global namespace
+class C; // some class
+
+C::s_member; // s_member is qualified by class C
+obj.x; // x is qualified by class object obj
+ptr->y; // y is qualified by pointer to class object ptr
+```
+- An unqualified name is a name that does not include a scoping qualifier
+- A **using declaration** allows us to use an unqualified name (with no scope) as an alias for a qualified name
+- The using-declaration using std::cout; tells the compiler that we’re going to be using the object cout from the std namespace. So whenever it sees cout, it will assume that we mean std::cout. If there’s a naming conflict between std::cout and some other use of cout, std::cout will be preferred
+- a **using directive** imports all of the identifiers from a namespace into the scope of the using-directive.
+- Avoid using-directives (particularly using namespace std;), except in specific circumstances (such as using namespace std::literals to access the s and sv literal suffixes)
+
+Unnamed and inline namespaces
+- An unnamed namespace (also called an anonymous namespace) is a namespace that is defined without a name, like so:
+```
+namespace // unnamed namespace
+{
+    void doSomething() // can only be accessed in this file
+    {
+        std::cout << "v1\n";
+    }
+}
+
+int main()
+{
+    doSomething(); // we can call doSomething() without a namespace prefix
+
+    return 0;
+}
+```
+- All content declared in an unnamed namespace is treated as if it is part of the parent namespace
+- the other effect of unnamed namespaces is that all identifiers inside an unnamed namespace are treated as if they have internal linkage, which means that the content of an unnamed namespace can’t be seen outside of the file in which the unnamed namespace is defined.
+- For functions, this is effectively the same as defining all functions in the unnamed namespace as static functions. The following program is effectively identical to the one above:
+```
+#include <iostream>
+
+static void doSomething() // can only be accessed in this file
+{
+    std::cout << "v1\n";
+}
+
+int main()
+{
+    doSomething(); // we can call doSomething() without a namespace prefix
+
+    return 0;
+}
+```
+- Unnamed namespaces are typically used when you have a lot of content that you want to ensure stays local to a given file, as it’s easier to cluster such content in a single unnamed namespace than individually mark all declarations as static
+- Unnamed namespaces will also keep program-defined types (something we’ll discuss in a later lesson) local to the file, something for which there is no alternative equivalent mechanism to do
+- An **inline namespace** is a namespace that is typically used to version content
 
