@@ -800,4 +800,24 @@ Why (non-const) global variables are evil
 - As a rule of thumb, any use of a global variable should meet at least the following two criteria: There should only ever be one of the thing the variable represents in your program, and its use should be ubiquitous throughout your program.
 - Put all globals in a namespace
 - instead of allowing direct access to the global variable, it’s a better practice to “encapsulate” the variable. Make sure the variable can only be accessed from within the file it’s declared in, e.g. by making the variable static or const, then provide external global “access functions” to work with the variable. T
--
+
+Sharing global constants across multiple files (using inline variables)
+- The term “optimizing away” refers to any process where the compiler optimizes the performance of your program by removing things in a way that doesn’t affect the output of your program. For example, lets say you have some const variable x that’s initialized to value 4. Wherever your code references variable x, the compiler can just replace x with 4 (since x is const, we know it won’t ever change to a different value) and avoid having to create and initialize a variable altogether.
+- We use const instead of constexpr in this method because constexpr variables can’t be forward declared, even if they have external linkage. This is because the compiler needs to know the value of the variable at compile time, and a forward declaration does not provide this information.
+- In order for variables to be usable in compile-time contexts, such as array sizes, the compiler has to see the variable’s definition (not just a forward declaration).
+- prefer defining your constants in a header file (either per the prior section, or per the next section)
+- Constexpr functions are implicitly inline, but constexpr variables are not implicitly inline.
+- If you need global constants and your compiler is C++17 capable, prefer defining inline constexpr global variables in a header file.
+- Use std::string_view for constexpr strings.
+
+Static local variables
+- Using the static keyword on a local variable changes its duration from automatic duration to static duration. This means the variable is now created at the start of the program, and destroyed at the end of the program (just like a global variable). As a result, the static variable will retain its value even after it goes out of scope!
+- Static local variables with a non-constexpr initializer are reinitialized the first time the variable definition is encountered.
+- Static variables offer some of the benefit of global variables (they don’t get destroyed until the end of the program) while limiting their visibility to block scope. This makes them easier to understand and safer to use even if you change their values regularly.
+- Initialize your static local variables. Static local variables are only initialized the first time the code is executed, not on subsequent calls.
+- Static local variables can be made const (or constexpr). One good use for a const static local variable is when you have a function that needs to use a const value, but creating or initializing the object is expensive (e.g. you need to read the value from a database)
+- Avoid static local variables unless the variable never needs to be reset.
+
+Scope, duration, and linkage summary
+- When used as part of an identifier declaration, the static and extern keywords are called storage class specifiers
+
