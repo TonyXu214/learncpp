@@ -820,4 +820,6 @@ Static local variables
 
 Scope, duration, and linkage summary
 - When used as part of an identifier declaration, the static and extern keywords are called storage class specifiers
+<img width="1448" alt="Screenshot 2024-01-11 at 10 40 50 PM" src="https://github.com/TonyXu214/learncpp/assets/13933543/d65edac7-7657-486d-b9c9-cdda7981de52">
+<img width="1337" alt="Screenshot 2024-01-11 at 10 40 59 PM" src="https://github.com/TonyXu214/learncpp/assets/13933543/065aa2f9-e5d8-493f-9a2f-31a537104ece">
 
