@@ -880,3 +880,58 @@ int main()
 - Unnamed namespaces will also keep program-defined types (something we’ll discuss in a later lesson) local to the file, something for which there is no alternative equivalent mechanism to do
 - An **inline namespace** is a namespace that is typically used to version content
 
+### Chapter 8
+
+Control flow introduction
+- The specific sequence of statements that the CPU executes is called the program’s execution path
+- straight-line program. Straight-line programs take the same path (execute the same statements in the same order) every time they are run.
+- C++ provides a number of different control flow statements (also called flow control statements), which are statements that allow the programmer to change the normal path of execution through the program
+- A conditional statement is a statement that specifies whether some associated statement(s) should be executed or not
+- Consider putting single statements associated with an if or else in blocks (particularly while you are learning). More experienced C++ developers sometimes disregard this practice in favor of tighter vertical spacing.
+
+Constexpr if statements
+- constexpr if statement, which requires the conditional to be a constant expression. The conditional of a constexpr-if-statement will be evaluated at compile-time.
+- Favor constexpr if statements over non-constexpr if statements when the conditional is a constant expression.
+
+Switch statement basics
+- Compared to the original if statement, the switch statement has the advantage of only evaluating the expression once (making it more efficient)
+- The one restriction is that the condition must evaluate to an integral type or an enumerated type
+
+Switch fallthrough and scoping
+- Use the [[fallthrough]] attribute (along with a null statement) to indicate intentional fallthrough.
+- initialization of variables does require the definition to execute at runtime (since the value of the initializer must be determined at that point). Initialization of variables is disallowed in any case that is not the last case (because the initializer could be jumped over, which would leave the variable uninitialized)
+- If defining variables used in a case statement, do so in a block inside the case.
+
+Goto statements
+- unconditional jumps are implemented via a goto statement, and the spot to jump to is identified through use of a statement label
+- Statement labels utilize a third kind of scope: function scope, which means the label is visible throughout the function even before its point of declaration.
+- The goto statement and its corresponding statement label must appear in the same function.
+- note that statement labels must be associated with a statement (hence their name: they label a statement). Because the end of the function had no statement, we had to use a null statement so we had a statement to label
+- Avoid goto statements (unless the alternatives are significantly worse for code readability).
+
+Introduction to loops and while statements
+- Favor while(true) for intentional infinite loops.
+- Favor while loops over do-while when given an equal choice.
+
+For statements
+- Avoid operator!= when doing numeric comparisons in the for-loop condition.
+- Defining multiple variables (in the init-statement) and using the comma operator (in the end-expression) is acceptable inside a for statement.
+- Prefer for loops over while loops when there is an obvious loop variable.
+- Prefer while loops over for loops when there is no obvious loop variable.
+
+Break and Continue
+- Use break and continue when they simplify your loop logic.
+- Use early returns when they simplify your function’s logic.
+
+Halts
+- A halt is a flow control statement that terminates the program. In C++, halts are implemented as functions (rather than keywords), so our halt statements will be function calls
+- std::exit() is a function that causes the program to terminate normally. Normal termination means the program has exited in an expected way
+- Note that the term normal termination does not imply anything about whether the program was successful
+- std::exit() performs a number of cleanup functions. First, objects with static storage duration are destroyed. Then some other miscellaneous file cleanup is done if any files were used. Finally, control is returned back to the OS, with the argument passed to std::exit() used as the status code
+- The std::exit() function does not clean up local variables in the current function or up the call stack.
+- A few notes here about std::atexit() and the cleanup function: First, because std::exit() is called implicitly when main() terminates, this will invoke any functions registered by std::atexit() if the program exits that way. Second, the function being registered must take no parameters and have no return value. Finally, you can register multiple cleanup functions using std::atexit() if you want, and they will be called in reverse order of registration (the last one registered will be called first
+- The std::abort() function causes your program to terminate abnormally. Abnormal termination means the program had some kind of unusual runtime error and the program couldn’t continue to run. For example, trying to divide by 0 will result in an abnormal termination. std::abort() does not do any cleanup
+- The std::terminate() function is typically used in conjunction with exceptions (we’ll cover exceptions in a later chapter). Although std::terminate can be called explicitly, it is more often called implicitly when an exception isn’t handled (and in a few other exception-related cases). By default, std::terminate() calls std::abort()
+- The short answer is “almost never”. Destroying local objects is an important part of C++ (particularly when we get into classes), and none of the above-mentioned functions clean up local variables. Exceptions are a better and safer mechanism for handling error cases
+- Only use a halt if there is no safe way to return normally from the main function. If you haven’t disabled exceptions, prefer using exceptions for handling errors safely.
+
