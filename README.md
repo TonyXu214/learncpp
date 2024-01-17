@@ -935,3 +935,14 @@ Halts
 - The short answer is “almost never”. Destroying local objects is an important part of C++ (particularly when we get into classes), and none of the above-mentioned functions clean up local variables. Exceptions are a better and safer mechanism for handling error cases
 - Only use a halt if there is no safe way to return normally from the main function. If you haven’t disabled exceptions, prefer using exceptions for handling errors safely.
 
+Introduction to random number generation
+- Most PRNGs that produce quality results use at least 16 bytes of state, if not significantly more. However, the size of the seed value can be smaller than the size of the state of the PRNG. When this happens, we say the PRNG has been underseeded.
+- As of C++20, the Mersenne Twister algorithm is the only PRNG that ships with C++ that has both decent performance and quality
+
+Generating random numbers using Mersenne Twister
+- mt() is a concise syntax for calling the function mt.operator(), which for these PRNG types has been defined to return the next random result in the sequence. The advantage of using operator() instead of a named function is that we don’t need to remember the function’s name, and the concise syntax is less typing.
+- Use std::random_device to seed your PRNGs (unless it’s not implemented properly for your target compiler/architecture).
+- Only seed a given pseudo-random number generator once, and do not reseed it.
+- When a PRNG is given a poor quality seed (or underseeded), the initial results of the PRNG may not be high quality. For this reason, some PRNGs benefit from being “warmed up”, which is a technique where the first N results generated from the PRNG are discarded.
+
+
