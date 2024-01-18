@@ -945,4 +945,26 @@ Generating random numbers using Mersenne Twister
 - Only seed a given pseudo-random number generator once, and do not reseed it.
 - When a PRNG is given a poor quality seed (or underseeded), the initial results of the PRNG may not be high quality. For this reason, some PRNGs benefit from being “warmed up”, which is a technique where the first N results generated from the PRNG are discarded.
 
+### Chapter 9
+
+Introduction to testing your code
+- Write your program in small, well defined units (functions or classes), compile often, and test your code as you go.
+
+Code coverage
+- Aim for 100% branch coverage of your code.
+- Use the 0, 1, 2 test to ensure your loops work correctly with different number of iterations.
+- Test different categories of input values to make sure your unit handles them properly.
+
+Detecting and handling errors
+- C++ offers an entirely separate way to pass errors back to the caller: exceptions.
+- The basic idea is that when an error occurs, an exception is “thrown”. If the current function does not “catch” the error, the caller of the function has a chance to catch the error
+
+std::cin and handling invalid input
+- When the user enters input in response to an extraction operation, that data is placed in a buffer inside of std::cin. A buffer (also called a data buffer) is simply a piece of memory set aside for storing data temporarily while it’s moved from one place to another. In this case, the buffer is used to hold user input while it’s waiting to be extracted to variables.
+
+Assert and static_assert
+- An assertion is an expression that will be true unless there is a bug in the program.
+- When an assertion evaluates to false, your program is immediately stopped. This gives you an opportunity to use debugging tools to examine the state of your program and determine why the assertion failed. Working backwards, you can then find and fix the issue.
+- Use assertions to document cases that should be logically impossible.
+- static_assert. A static_assert is an assertion that is checked at compile-time rather than at runtime, with a failing static_assert causing a compile error.
 
