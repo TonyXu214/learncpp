@@ -968,3 +968,17 @@ Assert and static_assert
 - Use assertions to document cases that should be logically impossible.
 - static_assert. A static_assert is an assertion that is checked at compile-time rather than at runtime, with a failing static_assert causing a compile error.
 
+### Chapter 10
+
+Implicit type conversion
+- The process of producing a new value of some type from a value of a different type is called a conversion.
+- Conversions do not change the value or type being converted. Instead, a new value with the desired type is created as a result of the conversion.
+- Implicit type conversion (also called automatic type conversion or coercion) is performed automatically by the compiler when one data type is required, but a different data type is supplied.
+- The C++ language standard defines how different fundamental types (and in some cases, compound types) can be converted to other types. These conversion rules are called the standard conversions.
+
+Floating-point and integral promotion
+- The number of bits a data type uses is called its width. A wider data type is one that uses more bits, and a narrower data type is one that uses less bits.
+- A numeric promotion is the type conversion of certain narrower numeric types (such as a char) to certain wider numeric types (typically int or double) that can be processed efficiently and is less likely to have a result that overflows.
+- All numeric promotions are value-preserving, which means that the converted value will always be equal to the source value (it will just have a different type).
+
+
