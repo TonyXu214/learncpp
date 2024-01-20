@@ -981,4 +981,18 @@ Floating-point and integral promotion
 - A numeric promotion is the type conversion of certain narrower numeric types (such as a char) to certain wider numeric types (typically int or double) that can be processed efficiently and is less likely to have a result that overflows.
 - All numeric promotions are value-preserving, which means that the converted value will always be equal to the source value (it will just have a different type).
 
+Numeric conversions
+- C++ supports another category of numeric type conversions, called numeric conversions. These numeric conversions cover additional type conversions between fundamental types.
+- Values converted using a reinterpretive conversion can be converted back to the source type, resulting in a value equivalent to the original value
+- Lossy conversions are potentially unsafe numeric conversions where some data may be lost during the conversion
+- Compilers will generally issue a warning (or in some cases, an error) when an implicit lossy conversion would be performed at runtime.
+
+Narrowing conversions, list initialization, and constexpr initializers
+- In C++, a narrowing conversion is a potentially unsafe numeric conversion where the destination type may not be able to hold all the values of the source type.
+- Because they can be unsafe and are a source of errors, avoid narrowing conversions whenever possible.
+- In such cases, it is a good idea to convert an implicit narrowing conversion into an explicit narrowing conversion using static_cast
+- When the source value of a narrowing conversion is constexpr, the specific value to be converted must be known to the compiler. In such cases, the compiler can perform the conversion itself, and then check whether the value was preserved. If the value was not preserved, the compiler can halt compilation with an error. If the value is preserved, the conversion is not considered to be narrowing
+
+Arithmetic conversions
+- If one of these operators is invoked with operands of different types, one or both of the operands will be implicitly converted to matching types using a set of rules called the usual arithmetic conversions
 
