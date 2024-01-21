@@ -1020,3 +1020,20 @@ Type deduction for objects using the auto keyword
 Type deduction for Functions
 - Favor explicit return types over function return type deduction for normal functions.
 - The auto keyword can also be used to declare functions using a trailing return syntax, where the return type is specified after the rest of the function prototype
+
+### Chapter 11
+
+Introduction to function overloading
+- Function overloading allows us to create multiple functions with the same name, so long as each identically named function has different parameter types (or the functions can be otherwise differentiated). Each function sharing a name (in the same scope) is called an overloaded function (sometimes called an overload for short)
+- Functions can be overloaded so long as each overloaded function can be differentiated by the compiler. If an overloaded function can not be differentiated, a compile error will result.
+- Additionally, when a function call is made to a function that has been overloaded, the compiler will try to match the function call to the appropriate overload based on the arguments used in the function call. This is called overload resolution
+- Use function overloading to make your program simpler.
+
+Function overload differentiation
+- Because type aliases (or typedefs) are not distinct types, overloaded functions using type aliases are not distinct from overloads using the aliased type
+- For parameters passed by value, the const qualifier is also not considered
+- A function’s type signature (generally called a signature) is defined as the parts of the function header that are used for differentiation of the function. In C++, this includes the function name, number of parameters, parameter type, and function-level qualifiers. It notably does not include the return type
+
+Function overload resolution and ambiguous matches
+-
+
