@@ -996,3 +996,27 @@ Narrowing conversions, list initialization, and constexpr initializers
 Arithmetic conversions
 - If one of these operators is invoked with operands of different types, one or both of the operands will be implicitly converted to matching types using a set of rules called the usual arithmetic conversions
 
+Explicit type conversion (casting) and static_cast
+- Because casts are explicit requests by the programmer, this form of type conversion is often called an explicit type conversion
+- Avoid const casts and reinterpret casts unless you have a very good reason to use them.
+- Although a C-style cast appears to be a single cast, it can actually perform a variety of different conversions depending on context. This can include a static cast, a const cast or a reinterpret cast (the latter two of which we mentioned above you should avoid). As a result, C-style casts are at risk for being inadvertently misused and not producing the expected behavior, something which is easily avoidable by using the C++ casts instead.
+- Avoid using C-style casts.
+- The main advantage of static_cast is that it provides compile-time type checking, making it harder to make an inadvertent error.
+- Favor static_cast when you need to convert a value from one type to another type.
+- Implicit type conversion is automatically performed whenever one data type is expected, but a different data type is supplied.
+- Explicit type conversion happens when the programmer uses a type cast to explicitly convert a value from one type to another type.
+
+Typedefs and type aliases
+- In C++, using is a keyword that creates an alias for an existing data type
+- Because the compiler does not prevent these kinds of semantic errors for type aliases, we say that aliases are not type safe
+- Use type aliases judiciously, when they provide a clear benefit to code readability or code maintenance.
+
+Type deduction for objects using the auto keyword
+- Type deduction (also sometimes called type inference) is a feature that allows the compiler to deduce the type of an object from the object’s initializer
+- In most cases, type deduction will drop the const or constexpr qualifier from deduced types
+- Use type deduction for your variables when the type of the object doesn’t matter.
+- Favor an explicit type when you require a specific type that differs from the type of the initializer, or when your object is used in a context where making the type obvious is useful
+
+Type deduction for Functions
+- Favor explicit return types over function return type deduction for normal functions.
+- The auto keyword can also be used to declare functions using a trailing return syntax, where the return type is specified after the rest of the function prototype
