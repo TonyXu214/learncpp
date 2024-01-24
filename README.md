@@ -1035,5 +1035,18 @@ Function overload differentiation
 - A function’s type signature (generally called a signature) is defined as the parts of the function header that are used for differentiation of the function. In C++, this includes the function name, number of parameters, parameter type, and function-level qualifiers. It notably does not include the return type
 
 Function overload resolution and ambiguous matches
--
+- Since a function call can only resolve to one of them, the compiler has to determine which overloaded function is the best match. The process of matching function calls to a specific overloaded function is called overload resolution
+- The trivial conversions are a set of specific conversion rules that will modify types (without modifying the value) for purposes of finding a match.
+- Converting a non-reference type to a reference type (or vice-versa) is also a trivial conversion.
+
+Deleting Functions
+- In cases where we have a function that we explicitly do not want to be callable, we can define that function as deleted by using the = delete specifier
+- = delete means “I forbid this”, not “this doesn’t exist”.
+
+Default arguments
+- A default argument is a default value provided for a function parameter
+- Perhaps surprisingly, default arguments are handled by the compiler at the call site. In the above example, when the compiler sees print(3), it will rewrite this function call as print(3, 4), so that the number of arguments matches the number of parameters.
+- If a parameter is given a default argument, all subsequent parameters (to the right) must also be given default arguments.
+- Once declared, a default argument can not be redeclared (in the same file). That means for a function with a forward declaration and a function definition, the default argument can be declared in either the forward declaration or the function definition, but not both
+- If the function has a forward declaration (especially one in a header file), put the default argument there. Otherwise, put the default argument in the function definition.
 
