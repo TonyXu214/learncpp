@@ -1050,3 +1050,30 @@ Default arguments
 - Once declared, a default argument can not be redeclared (in the same file). That means for a function with a forward declaration and a function definition, the default argument can be declared in either the forward declaration or the function definition, but not both
 - If the function has a forward declaration (especially one in a header file), put the default argument there. Otherwise, put the default argument in the function definition.
 
+Function templates
+- The compiler can use a single template to generate a family of related functions or classes, each using a different set of types.
+- Templates can work with types that didn’t even exist when the template was written. This helps make template code both flexible and future proof!
+- A function template is a function-like definition that is used to generate one or more overloaded functions, each with a different set of actual types
+- When we create our function template, we use placeholder types (also called type template parameters, or informally template types) for any parameter types, return types, or types used in the function body that we want to be specified later
+- Second, we’re going to tell the compiler that this is a function template, and that T is a type template parameter that is a placeholder for any type. This is done using what is called a template parameter declaration
+- Use a single capital letter starting with T (e.g. T, U, V, etc…) to name type template parameters that are used in trivial or obvious ways.
+- If the type template parameter has a non-obvious usage or meaning, then a more descriptive name is warranted. (e.g. Allocator or TAllocator).
+
+Function template instantiation
+- This looks a lot like a normal function call -- the primary difference is the addition of the type in angled brackets (called a template argument), which specifies the actual type that will be used in place of template type T
+- The process of creating functions (with specific types) from function templates (with template types) is called function template instantiation (or instantiation for short)
+- When this process happens due to a function call, it’s called implicit instantiation. An instantiated function is often called a function instance (instance for short) or a template function
+- In cases where the type of the arguments match the actual type we want, we do not need to specify the actual type -- instead, we can use template argument deduction to have the compiler deduce the actual type that should be used from the argument types in the function call
+- Favor the normal function call syntax when making calls to a function instantiated from a function template (unless you need the function template version to be preferred over a matching non-template function)
+- The compiler will instantiate and compile function templates that do not make sense semantically as long as they are syntactically valid. It is your responsibility to make sure you are calling such function templates with arguments that make sense.
+- The most conventional way to address this issue is to put all your template code in a header (.h) file instead of a source (.cpp) file
+- You may be wondering why this doesn’t cause a violation of the one-definition rule (ODR). The ODR says that types, templates, inline functions, and inline variables are allowed to have identical definitions in different files.
+- The answer is that functions implicitly instantiated from templates are implicitly inline
+- Template definitions are exempt from the part of the one-definition rule that requires only one definition per program, so it is not a problem to have the same template definition #included into multiple source files. And functions implicitly instantiated from function templates are implicitly inline, so they can be defined in multiple files, so long as each definition is identical.
+- The templates themselves are not inline, as the concept of inline only applies to variables and functions.
+- Templates that are needed in multiple files should be defined in a header file, and then #included wherever needed. This allows the compiler to see the full template definition and instantiate the template when needed.
+- Because template types can be replaced with any actual type, template types are sometimes called generic types.
+- And because templates can be written agnostically of specific types, programming with templates is sometimes called generic programming
+- The bigger downside of function templates is that they tend to produce crazy-looking, borderline unreadable error messages that are much harder to decipher than those of regular functions.
+- Use function templates to write generic code that can work with a wide variety of types whenever you have the need.
+
