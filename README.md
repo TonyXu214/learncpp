@@ -1077,3 +1077,14 @@ Function template instantiation
 - The bigger downside of function templates is that they tend to produce crazy-looking, borderline unreadable error messages that are much harder to decipher than those of regular functions.
 - Use function templates to write generic code that can work with a wide variety of types whenever you have the need.
 
+Function templates with multiple template types
+- type conversion is done only when resolving function overloads, not when performing template argument deduction
+- C++20 introduces a new use of the auto keyword: When the auto keyword is used as a parameter type in a normal function, the compiler will automatically convert the function into a function template with each auto parameter becoming an independent template type parameter. This method for creating a function template is called an abbreviated function template.
+- this form is preferred as the removal of the template parameter declaration line makes your code more concise and readable
+- Feel free to use abbreviated function templates with a single auto parameter, or where each auto parameter should be an independent type (and your language standard is set to C++20 or newer).
+
+Non-type template parameters
+- A non-type template parameter is a template parameter with a fixed type that serves as a placeholder for a constexpr value passed in as a template argument
+- Use N as the name of an int non-type template parameter.
+- Non-type template parameters are used primarily when we need to pass constexpr values to functions (or class types) so they can be used in contexts that require a constant expression.
+

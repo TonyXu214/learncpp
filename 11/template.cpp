@@ -11,6 +11,12 @@ T addOne(T x)
     return x + 1;
 }
 
+template <typename T, typename U>
+auto max(T x, U y)
+{
+    return (x > y) ? x : y;
+}
+
 template <typename T>
 void print(T x)
 {
@@ -36,6 +42,8 @@ int main()
     std::cout << max<int>(5, 10) << '\n';
     std::cout << max<>(5, 10) << '\n'; //  the compiler will only consider max<int> template function overloads
     std::cout << max(5, 10) << '\n'; // the compiler will consider both max<int> template function overloads and max non-template function overloads
+    std::cout << max(5, 10.5) << '\n'; // does not compile!
+    // std::cout << max<double>(5, 10.5) << '\n'; // does compile!
     std::cout << max<int>('a', 'b') << '\n';
     std::cout << max<char>('a', 'b') << '\n';
     print<bool>(true); // matches to template
