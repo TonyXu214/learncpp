@@ -1088,3 +1088,68 @@ Non-type template parameters
 - Use N as the name of an int non-type template parameter.
 - Non-type template parameters are used primarily when we need to pass constexpr values to functions (or class types) so they can be used in contexts that require a constant expression.
 
+### Chapter 12
+Introduction to compound data types
+- Compound data types (also sometimes called composite data types) are data types that can be constructed from fundamental data types (or other compound data types)
+
+Value categories (lvalues and rvalues)
+- all expressions in C++ have two properties: a type and a value category
+- The value category of an expression (or subexpression) indicates whether an expression resolves to a value, a function, or an object of some kind.
+- An lvalue (pronounced “ell-value”, short for “left value” or “locator value”, and sometimes written as “l-value”) is an expression that evaluates to an identifiable object or function (or bit-field)
+- a modifiable lvalue is an lvalue whose value can be modified. A non-modifiable lvalue is an lvalue whose value can’t be modified (because the lvalue is const or constexpr)
+- An rvalue (pronounced “arr-value”, short for “right value”, and sometimes written as r-value) is an expression that is not an lvalue
+- Rvalues aren’t identifiable (meaning they have to be used immediately), and only exist within the scope of the expression in which they are used
+- Lvalue expressions evaluate to an identifiable object.
+- Rvalue expressions evaluate to a value.
+- If you’re not sure whether an expression is an lvalue or rvalue, try taking its address using operator&
+- lvalue expressions will implicitly convert to rvalue expressions in contexts where an rvalue is expected but an lvalue is provided
+- Lvalue expressions are those that evaluate to variables or other identifiable objects that persist beyond the end of the expression.
+- Rvalue expressions are those that evaluate to literals or values returned by functions/operators that are discarded at the end of the expression.
+
+Lvalue References
+- reference is an alias for an existing object
+- A reference is essentially identical to the object being referenced.
+- An lvalue reference (commonly just called a reference since prior to C++11 there was only one type of reference) acts as an alias for an existing lvalue (such as a variable).
+- An lvalue reference variable is a variable that acts as a reference to an lvalue (usually another variable)
+- Much like constants, all references must be initialized.
+- When a reference is initialized with an object (or function), we say it is bound to that object (or function). The process by which such a reference is bound is called reference binding. The object (or function) being referenced is sometimes called the referent
+- lvalue references are occasionally called lvalue references to non-const
+- the type of the reference must match the type of the referent
+- Once initialized, a reference in C++ cannot be reseated, meaning it cannot be changed to reference another object
+- the lifetime of a reference and the lifetime of its referent are independent
+- A reference can be destroyed before the object it is referencing
+- The object being referenced can be destroyed before the reference
+- When ref dies, variable x carries on as normal
+- When an object being referenced is destroyed before a reference to it, the reference is left referencing an object that no longer exists. Such a reference is called a dangling reference
+- references are not objects in C++. A reference is not required to exist or occupy storage
+- you can’t have a reference to a reference, since an lvalue reference must reference an identifiable object
+
+Lvalue references to const
+- Lvalue references to const can also bind to modifiable lvalues. In such a case, the object being referenced is treated as const when accessed through the reference
+- Favor lvalue references to const over lvalue references to non-const unless you need to modify the object being referenced.
+- lvalues references to const can also bind to rvalues
+- C++ has a special rule: When a const lvalue reference is directly bound to a temporary object, the lifetime of the temporary object is extended to match the lifetime of the reference
+- Lvalue references can only bind to modifiable lvalues
+- Lvalue references to const can bind to modifiable lvalues, non-modifiable lvalues, and rvalues. This makes them a much more flexible type of reference
+
+Pass by lvalue reference
+- One way to avoid making an expensive copy of an argument when calling a function is to use pass by reference instead of pass by value. When using pass by reference, we declare a function parameter as a reference type (or const reference type) rather than as a normal type
+- Pass by reference allows us to pass arguments to a function without making copies of those arguments each time the function is called.
+
+Pass by const lvalue reference
+- if we make a reference parameter const, then it will be able to bind to any type of argument
+- Passing by const reference offers the same primary benefit as pass by reference (avoiding making a copy of the argument), while also guaranteeing that the function can not change the value being referenced
+- Favor passing by const reference over passing by non-const reference unless you have a specific reason to do otherwise (e.g. the function needs to change the value of an argument).
+- As a rule of thumb, pass fundamental types by value, and class (or struct) types by const reference
+- Other common types to pass by value: enumerated types and std::string_view.
+- Other common types to pass by (const) reference: std::string, std::array, and std::vector.
+- binding a reference to an object is always fast (about the same speed as copying a fundamental type).
+- Second, accessing an object through a reference is slightly more expensive than accessing an object through a normal variable identifier
+- With a variable identifier, the running program can just go to the memory address assigned to that variable and access the value directly. With a reference, there usually is an extra step: the program must first access the reference to determine which object is being referenced, and only then can it go to that memory address for that object and access the value
+- The compiler can also sometimes optimize code using objects passed by value more highly than code using objects passed by reference
+- Prefer pass by value for objects that are cheap to copy, and pass by const reference for objects that are expensive to copy. If you’re not sure whether an object is cheap or expensive to copy, favor pass by const reference.
+- should the type of the parameter be const std::string& or std::string_view
+- In most cases, std::string_view is the better choice, as it can handle a wider range of argument types efficiently
+- Prefer passing strings using std::string_view (by value) instead of const std::string&, unless your function calls other functions that require C-style strings or std::string parameter
+- Because a std::string_view parameter is a normal object, the string being viewed can be accessed directly. Accessing a std::string& parameter requires an additional step to get to the referenced object before the string can be accessed
+
