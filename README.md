@@ -1153,3 +1153,65 @@ Pass by const lvalue reference
 - Prefer passing strings using std::string_view (by value) instead of const std::string&, unless your function calls other functions that require C-style strings or std::string parameter
 - Because a std::string_view parameter is a normal object, the string being viewed can be accessed directly. Accessing a std::string& parameter requires an additional step to get to the referenced object before the string can be accessed
 
+Introduction to pointers
+- The address-of operator (&) returns the memory address of its operand
+- The dereference operator (*) (also occasionally called the indirection operator) returns the value at a given memory address as an lvalue
+- A pointer is an object that holds a memory address (typically of another variable) as its value
+- When declaring a pointer type, place the asterisk next to the type name.
+- Like normal variables, pointers are not initialized by default. A pointer that has not been initialized is sometimes called a wild pointer. Wild pointers contain a garbage address, and dereferencing a wild pointer will result in undefined behavior
+- initializing a pointer with a literal value is disallowed
+- Thus, pointers and references both provide a way to indirectly access another object. The primary difference is that with pointers, we need to explicitly get the address to point at, and we have to explicitly dereference the pointer to get the value. With references, the address-of and dereference happens implicitly
+- References must be initialized, pointers are not required to be initialized (but should be).
+- References are not objects, pointers are.
+- References can not be reseated (changed to reference something else), pointers can change what they are pointing at.
+- References must always be bound to an object, pointers can point to nothing (we’ll see an example of this in the next lesson).
+- References are “safe” (outside of dangling references), pointers are inherently dangerous (we’ll also discuss this in the next lesson)
+- The size of the pointer is always the same. This is because a pointer is just a memory address, and the number of bits needed to access a memory address is constant
+- Much like a dangling reference, a dangling pointer is a pointer that is holding the address of an object that is no longer valid
+
+Null pointers
+- Besides a memory address, there is one additional value that a pointer can hold: a null value. A null value (often shortened to null) is a special value that means something has no value. When a pointer is holding a null value, it means the pointer is not pointing at anything. Such a pointer is called a null pointer
+- Value initialize your pointers (to be null pointers) if you are not initializing them with the address of a valid object.
+- Much like the keywords true and false represent Boolean literal values, the nullptr keyword represents a null pointer literal. We can use nullptr to explicitly initialize or assign a pointer a null value
+- Accidentally dereferencing null and dangling pointers is one of the most common mistakes C++ programmers make, and is probably the most common reason that C++ programs crash in practice
+- Conditionals can only be used to differentiate null pointers from non-null pointers. There is no convenient way to determine whether a non-null pointer is pointing to a valid object or dangling (pointing to an invalid object)
+- A pointer should either hold the address of a valid object, or be set to nullptr. That way we only need to test pointers for null, and can assume any non-null pointer is valid.
+- Favor references over pointers unless the additional capabilities provided by pointers are needed.
+
+Pointers and const
+- we can’t set a normal pointer to point at a const variable
+- A pointer to const treats the value being pointed to as constant, regardless of whether the object at that address was initially defined as const or not
+- A const pointer is a pointer whose address can not be changed after initialization
+
+Pass by address
+- With pass by address, instead of providing an object as an argument, the caller provides an object’s address (via a pointer)
+- Thus, just like pass by reference, pass by address is fast, and avoids making a copy of the argument object
+- If a null pointer should never be passed to the function, an assert (which we covered in lesson 9.6 -- Assert and static_assert) can be used instead (or also) (as asserts are intended to document things that should never happen)
+- Prefer pass by reference to pass by address unless you have a specific reason to use pass by address.
+- References are normally implemented by the compiler using pointers
+- we can conclude that C++ really passes everything by value! The properties of pass by address (and reference) come solely from the fact that we can dereference the passed address to change the argument, which we can not do with a normal value parameter
+
+Return by reference and return by address
+- We encounter a similar situation when returning by value: a copy of the return value is passed back to the caller
+- Return by reference returns a reference that is bound to the object being returned, which avoids making a copy of the return value
+- Using return by reference has one major caveat: the programmer must be sure that the object being referenced outlives the function returning the reference.
+- Objects returned by reference must live beyond the scope of the function returning the reference, or a dangling reference will result. Never return a (non-static) local variable or temporary by reference.
+- Reference lifetime extension does not work across function boundaries.
+- Avoid returning references to non-const local static variables.
+- If a function returns a reference, and that reference is used to initialize or assign to a non-reference variable, the return value will be copied (as if it had been returned by value)
+- Also note that if a program returns a dangling reference, the reference is left dangling before the copy is made, which will lead to undefined behavior
+- When an argument for a const reference parameter is an rvalue, it’s still okay to return that parameter by const reference
+- When an argument is passed to a function by non-const reference, the function can use the reference to modify the value of the argument.
+- The major advantage of return by address over return by reference is that we can have the function return nullptr if there is no valid object to return
+- Prefer return by reference over return by address unless the ability to return “no object” (using nullptr) is important.
+
+In and out parameters
+- In most cases, a function parameter is used only to receive an input from the caller. Parameters that are used only for receiving input from the caller are sometimes called in parameters
+- By convention, output parameters are typically the rightmost parameters
+- Avoid out-parameters (except in the rare case where no better options exist).
+- Prefer pass by reference for non-optional out-parameters.
+- In rare cases, a function will actually use the value of an out-parameter before overwriting its value. Such a parameter is called an in-out parameter. In-out-parameters work identically to out-parameters and have all the same challenges.
+- Second, use pass by non-const reference when a function would otherwise return an object by value to the caller, but making a copy of that object is extremely expensive. Especially if the function is called many times in a performance-critical section of code.
+
+Type deduction with pointers, references, and const
+- type deduction will drop const (and constexpr) qualifiers
