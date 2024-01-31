@@ -1215,3 +1215,15 @@ In and out parameters
 
 Type deduction with pointers, references, and const
 - type deduction will drop const (and constexpr) qualifiers
+- Const (or constexpr) can be (re)applied by adding the const (or constexpr) qualifier in the definition:
+- In addition to dropping const qualifiers, type deduction will also drop references:
+- A top-level const is a const qualifier that applies to an object itself. For example:
+- In contrast, a low-level const is a const qualifier that applies to the object being referenced or pointed to:
+- Dropping a reference may change a low-level const to a top-level const: const std::string& is a low-level const, but dropping the reference yields const std::string, which is a top-level const.
+- If you want a const reference, reapply the const qualifier even when it’s not strictly necessary, as it makes your intent clear and helps prevent mistakes.
+- Unlike references, type deduction does not drop pointers
+- When we use either auto const or const auto, we’re saying, “make whatever the deduced type is const”.
+- However, when we use auto*, the order of the const qualifier matters. A const on the left means “make the deduced pointer type a pointer to const”, whereas a const on the right means “make the deduced pointer type a const pointer”
+- If you want a const pointer, reapply the const qualifier even when it’s not strictly necessary, as it makes your intent clear and helps prevent mistakes.
+
+
