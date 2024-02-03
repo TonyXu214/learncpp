@@ -1226,4 +1226,35 @@ Type deduction with pointers, references, and const
 - However, when we use auto*, the order of the const qualifier matters. A const on the left means “make the deduced pointer type a pointer to const”, whereas a const on the right means “make the deduced pointer type a const pointer”
 - If you want a const pointer, reapply the const qualifier even when it’s not strictly necessary, as it makes your intent clear and helps prevent mistakes.
 
+### Chapter 13
+Introduction to program-defined (user-defined) types
+- Just like type aliases, program-defined types must also be defined before they can be used. The definition for a program-defined type is called a type definition
+- Name your program-defined types starting with a capital letter and do not use a suffix.
+- Every code file that uses a program-defined type needs to see the full type definition before it is used.
+- To propagate type definitions into the code files that need them, program-defined types are typically defined in header files, and then #included into any code file that requires that type definition. These header files are typically given the same name as the program-defined type (e.g. a program-defined type named Fraction would be defined in Fraction.h)
+- A program-defined type used in only one code file should be defined in that code file as close to the first point of use as possible.
+- A program-defined type used in multiple code files should be defined in a header file with the same name as the program-defined type and then #included into each code file as needed
+- To allow for this, types are partially exempt from the one-definition rule: a given type is allowed to be defined in multiple code files.
+- First, you can still only have one type definition per code file (this usually isn’t a problem since header guards will prevent this). Second, all of the type definitions for a given type must be identical, otherwise undefined behavior will result.
+- “program-defined type” to mean class types and enumerated types that are not defined as part of the standard library, implementation, or core language. In other words, “program-defined types” only include class types and enum types that are defined by us (or a third-party library)
+
+Unscoped enumerations
+- An enumeration (also called an enumerated type or an enum) is a compound data type whose values are restricted to a set of named symbolic constants (called enumerators)
+- Enumerators are implicitly constexpr
+- Name your enumerated types starting with a capital letter. Name your enumerators starting with a lower case letter.
+- Prefer putting your enumerations inside a named scope region (such as a namespace or class) so the enumerators don’t pollute the global namespace.
+
+Unscoped enumeration input and output
+- we mentioned that enumerators are symbolic constants. What we didn’t tell you then is that enumerators are integral symbolic constants
+- Avoid assigning explicit values to your enumerators unless you have a compelling reason to do so.
+- Specify the base type of an enumeration only when necessary.
+- if an unscoped enumeration has a specified base, then the compiler will allow you to list initialize an unscoped enumeration using an integral value
+
+Scoped enumerations (enum classes)
+- unscoped enumerations are distinct types in C++, they are not type safe, and in some cases will allow you to do things that don’t make sense
+- Scoped enumerations work similarly to unscoped enumerations, but have two primary differences: They won’t implicitly convert to integers, and the enumerators are only placed into the scope region of the enumeration (not into the scope region where the enumeration is defined).
+- you can list initialize a scoped enumeration using an integral value without the static_cast (and unlike an unscoped enumeration, you don’t need to specify a base).
+- Favor scoped enumerations over unscoped enumerations unless there’s a compelling reason to do otherwise.
+- a using enum statement imports all of the enumerators from an enum into the current scope
+
 
