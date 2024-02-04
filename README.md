@@ -1257,4 +1257,52 @@ Scoped enumerations (enum classes)
 - Favor scoped enumerations over unscoped enumerations unless there’s a compelling reason to do otherwise.
 - a using enum statement imports all of the enumerators from an enum into the current scope
 
+Introduction to structs, members, and member selection
+- A struct (short for structure) is a program-defined data type that allows us to bundle multiple variables together into a single type
+- The variables that are part of the struct are called data members (or member variables)
+- In C++, a member is a variable, function, or type that belongs to a struct (or class). All members must be declared within the struct (or class) definition.
+- To access a specific member variable, we use the member selection operator `.`
+
+Struct aggregate initialization
+- data members are not initialized by default
+- an aggregate data type (also called an aggregate) is any type that can contain multiple data members
+  - in c++: No user-declared constructors
+  - in c++: No private or protected non-static data members
+  - in c++: No virtual functions
+- The key thing to understand at this point is that structs with only data members are aggregates
+- Aggregates use a form of initialization called aggregate initialization, which allows us to directly initialize the members of aggregates. To do this, we provide an initializer list as an initializer, which is just a braced list of comma-separated values
+- Each of these initialization forms does a memberwise initialization, which means each member in the struct is initialized in the order of declaration
+- If an aggregate is initialized but the number of initialization values is fewer than the number of members, then all remaining members will be value-initialized
+- This means we can use an empty initialization list to value-initialize all members of the struct:
+- When initializing a struct from a list of values, the initializers are applied to the members in order of declaration
+- To help avoid this, C++20 adds a new way to initialize struct members called designated initializers.
+- The members can be initialized using list or copy initialization, and must be initialized in the same order in which they are declared in the struct, otherwise a warning or error will result
+- When adding a new member to an aggregate, it’s safest to add it to the bottom of the definition list so the initializers for other members don’t shift.
+- Similar to initializing a struct with an initializer list, you can also assign values to structs using an initializer list (which does memberwise assignment)
+- A struct may also be initialized using another struct of the same type
+
+Default member initialization
+- This process is called non-static member initialization, and the initialization value is called a default member initializer
+- Using default member initializers (or other mechanisms that we’ll cover later), structs and classes can self-initialize even when no explicit initializers are provided!
+- Explicit values in a list initializer always take precedence over default member initialization values
+- we noted that if an aggregate is initialized but the number of initialization values is fewer than the number of members, then all remaining members will be value-initialized. However, if a default member initializer is provided for a given member, that default member initializer will be used instead
+- If an aggregate is defined with an initialization list
+  - If an explicit initialization value exists, that explicit value is used
+  - If an initializer is missing and a default member initializer exists, the default is used
+  - If an initializer is missing and no default member initializer exists, value initialization occurs
+- If an aggregate is defined with no initialization list
+  - If a default member initializer exists, the default is used
+  - If no default member initializer exists, the member remains uninitialized
+- Provide a default value for all members. This ensures that your members will be initialized even if the variable definition doesn’t include an initializer list.
+- For aggregates, prefer value initialization (with an empty braces initializer) to default initialization (with no braces)
+
+Passing and returning structs
+- Structs are generally passed by (const) reference to avoid making copies
+- Structs are usually returned by value, so as not to return a dangling reference
+
+Struct miscellany
+- types can also be nested inside other types, so if an Employee only existed as part of a Company, the Employee type could be nested inside the Company struct
+- It turns out, we can only say that the size of a struct will be at least as large as the size of all the variables it contains. But it could be larger! For performance reasons, the compiler will sometimes add gaps into structures (this is called padding)
+- You can minimize padding by defining your members in decreasing order of size.
+- The C++ compiler is not allowed to reorder members, so this has to be done manually.
 
