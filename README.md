@@ -1306,3 +1306,26 @@ Struct miscellany
 - You can minimize padding by defining your members in decreasing order of size.
 - The C++ compiler is not allowed to reorder members, so this has to be done manually.
 
+Member selection with pointers and References
+- When using a pointer to access the value of a member, use the member selection from pointer operator (->) instead of the member selection operator (.).
+
+Class Templates
+- First, unlike functions, type definitions can’t be overloaded.
+  - Second, although functions can be overloaded, our max(Pair) functions only differ by return type, and overloaded functions can’t be differentiated solely by return type
+- Much like a function template is a template definition for instantiating functions, a class template is a template definition for instantiating class types.
+- A “class type” is a struct, class, or union type
+- The above example makes use of a feature called class template specialization
+- Both template definitions and type definitions are exempt from the one-definition rule
+
+Class template argument deduction (CTAD) and deduction guides
+- CTAD is only performed if no template argument list is present
+- To address this, we can provide the compiler with a deduction guide, which tells the compiler how to deduce the template arguments for a given class template
+- C++20 added the ability for the compiler to automatically generate deduction guides for aggregates, so deduction guides should only need to be provided for C++17 compatibility.
+- Just like function parameters can have default arguments, template parameters can be given default values. These will be used when the template parameter isn’t explicitly specified and can’t be deduced
+- CTAD stands for class template argument deduction, not class template parameter deduction, so it will only deduce the type of template arguments, not template parameters
+
+Alias templates
+- To do this, we can define an alias template, which is a template that can be used to instantiate type aliases
+- Here's our alias template
+- Alias templates must be defined in global scope
+
