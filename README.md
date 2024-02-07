@@ -1329,3 +1329,27 @@ Alias templates
 - Here's our alias template
 - Alias templates must be defined in global scope
 
+Introduction to object-oriented programming
+- In procedural programming, the focus is on creating “procedures” (which in C++ are called functions) that implement our program logic
+- In procedural programming, the functions and the data those functions operate on are separate entities
+- properties are represented by objects, and behaviors are represented by functions
+- In object-oriented programming (often abbreviated as OOP), the focus is on creating program-defined data types that contain both properties and a set of well-defined behaviors
+- Perhaps the biggest difficulty with structs is that they do not provide an effective way to document and enforce class invariants
+  - we defined an invariant as, “a condition that must be true while some component is executing”
+- a class invariant is a condition that must be true throughout the lifetime of an object in order for the object to remain in a valid state. An object that has a violated class invariant is said to be in an invalid state, and unexpected or undefined behavior may result from further use of that object
+- Relying on the user of an object to maintain class invariants is likely to result in problems.
+- Just like structs, a class is a program-defined compound type that can have many member variables with different types
+- From a technical standpoint, structs and classes are almost identical -- therefore, any example that is implemented using a struct could be implemented using a class, or vice-versa. However, from a practical standpoint, we use structs and classes differently
+
+Member functions
+- Functions that belong to a class type are called member functions.
+- Functions that are not member functions are called non-member functions (or occasionally free functions) to distinguish them from member functions.
+- Member functions defined inside the class type definition are implicitly inline, so they will not cause violations of the one-definition rule if the class type definition is included into multiple code files
+- The object that a member function is called on is implicitly passed to the member function. For this reason, the object that a member function is called on is often called the implicit object
+- Inside a member function, any member identifier that is not prefixed with the member selection operator (.) is associated with the implicit object
+- However, with member functions (and member data initializers), this limitation doesn’t apply, and we can define our members in any order we like
+- However, the compiler has a neat trick up its sleeve: member initializers and member function definitions are compiled as if they had been defined after the class definition. The actual definitions inside the class are used as implicit forward declarations
+- For simplicity, he ultimately decided that structs and classes would have a unified ruleset (meaning structs can do everything classes can, and vice-versa), and convention could dictate how structs would actually be used
+- In modern C++, it is fine for structs to have member functions. This excludes constructors, which are a special type of member function that we cover in upcoming lesson, A class type with a constructor is no longer an aggregate, and we want our structs to remain aggregates.
+- If your class type has no data members, prefer using a namespace.
+
