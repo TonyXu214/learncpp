@@ -1354,3 +1354,18 @@ Member functions
 - In modern C++, it is fine for structs to have member functions. This excludes constructors, which are a special type of member function that we cover in upcoming lesson, A class type with a constructor is no longer an aggregate, and we want our structs to remain aggregates.
 - If your class type has no data members, prefer using a namespace.
 
+Const class objects and const member functions
+- Const objects may not call non-const member functions
+- A const member function is a member function that guarantees it will not modify the object or call any non-const member functions
+- For member functions defined outside of the class definition, the const keyword must be used on both the function declaration in the class definition, and on the function definition outside the class definition.
+- Constructors may not be made const, as they need to initialize the members of the object, which requires modifying them
+- A member function that does not (and will not ever) modify the state of the object should be made const, so that it can be called on both const and non-const objects.
+- Later removal of const on a member function will break any code that calls that member function on a const object
+- Although instantiating const local variables is one way to create const objects, a more common way to get a const object is by passing an object to a function by const reference
+- it is possible to overload a member function to have a const and non-const version of the same function. This works because the const qualifier is considered part of the function’s signature, so two functions which differ only in their const-ness are considered distinct.
+
+Public and private members and access specifiers
+- Each member of a class type has a property called an access level that determines who can access that member.
+- Whenever a member is accessed, the compiler checks whether the access level of the member permits that member to be accessed. If the access is not permitted, the compiler will generate a compilation error. This access level system is sometimes informally called access controls
+- Public members are members of a class type that do not have any restrictions on how they can be accessed
+
