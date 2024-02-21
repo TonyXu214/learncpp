@@ -1368,4 +1368,48 @@ Public and private members and access specifiers
 - Each member of a class type has a property called an access level that determines who can access that member.
 - Whenever a member is accessed, the compiler checks whether the access level of the member permits that member to be accessed. If the access is not permitted, the compiler will generate a compilation error. This access level system is sometimes informally called access controls
 - Public members are members of a class type that do not have any restrictions on how they can be accessed
+- The members of a struct are public by default. Public members can be accessed by other members of the class type, and by the public.
+- The term “the public” is used to refer to code that exists outside of the members of a given class type. This includes non-member functions, as well as the members of other class types.
+- The members of a class are private by default. Private members can be accessed by other members of the class, but can not be accessed by the public.
+- A class with private members is no longer an aggregate, and therefore can no longer use aggregate initialization.
+- Consider naming your private members starting with an “m_” prefix to help distinguish them from the names of local variables, function parameters, and member functions.
+- we can explicitly set the access level of our members by using an access specifier
+- Structs should avoid access specifiers altogether, meaning all struct members will be public by default. We want our structs to be aggregates, and aggregates can only have public members
+- Classes should generally make member variables private (or protected), and member functions public.
+
+Access functions
+
+Member functions returning references to data members
+- It is okay to return a (const) lvalue reference to a data member. The implicit object (containing the data member) still exists in the scope of the caller after the function returns, so any returned references will be valid.
+- A member function returning a reference should return a reference of the same type as the data member being returned, to avoid unnecessary conversions.
+- An rvalue object is destroyed at the end of the full expression in which it is created. Any references to members of the rvalue object are left dangling at that point.
+- The evaluation of a full expression ends after any uses of that full expression as an initializer. This allows objects to be initialized with an rvalue of the same type (as the rvalue won’t be destroyed until after initialization occurs)
+- Prefer to use the return value of a member function that returns by reference immediately, to avoid issues with dangling references when the implicit object is an rvalue.
+- Do not return non-const references to private data members
+- Const member functions can’t return non-const references to data members
+
+The benefits of data hiding (encapsulation)
+- The interface of a class type defines how a user of the class type will interact with objects of the class type. Because only public members can be accessed from outside of the class type, the public members of a class type form its interface. For this reason, an interface composed of public members is sometimes called a public interface.
+- The implementation of a class type consists of the code that actually makes the class behave as intended.
+- In programming, data hiding (also called information hiding or data abstraction) is a technique used to enforce the separation of interface and implementation by hiding the implementation of a program-defined data type from users
+- Classes defined in C++ should use data hiding. And in fact, all of the classes provided by the standard library do just that. Structs, on the other hand, should not use data hiding, as having non-public members prevents them from being treated as aggregates
+- When we give users direct access to the implementation of a class, they become responsible for maintaining all invariants
+- Data hiding makes it possible to change implementation details without breaking existing programs
+- Declare public members first, protected members next, and private members last. This spotlights the public interface and de-emphasizes implementation details.
+
+Introduction to constructors
+- as soon as we make any member variables private (to hide our data), our class type is no longer an aggregate (because aggregates cannot have private members)
+- A constructor is a special member function that is automatically called after a non-aggregate class type object is created.
+- If an accessible matching constructor is found, memory for the object is allocated, and then the constructor function is called.
+- If no accessible matching constructor can be found, a compilation error will be generated.
+- Many new programmers are confused about whether constructors create the objects or not. They do not -- the compiler sets up the memory allocation for the object prior to the constructor call. The constructor is then called on the uninitialized object.
+- However, if a matching constructor cannot be found for a set of initializers, the compiler will error. So while constructors don’t create objects, the lack of a matching constructor will prevent creation of an object.
+- After the constructor finishes executing, we say that the object has been “constructed”
+
+Constructor member initializer lists
+- To have a constructor initialize members, we do so using a member initializer list
+- the members in a member initializer list are always initialized in the order in which they are defined inside the class
+- Member variables in a member initializer list should be listed in order that they are defined in the class.
+- The bodies of constructors functions are most often left empty
+- Prefer using the member initializer list to initialize your members over assigning values in the body of the constructor.
 
