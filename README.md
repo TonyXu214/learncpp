@@ -1429,3 +1429,12 @@ Foo foo2;  // default initialization, calls Foo() default constructor
 - However, if the class has a default constructor that is not user-defined (that is, either an implicitly-defined constructor, or a default constructor created using = default), the object will be zero-initialized before being default initialized.
 - Only create a default constructor when it makes sense
 
+Delegating constructors
+- Constructors should not be called directly from the body of another function. Doing so will either result in a compilation error, or will value initialize a temporary object and then discard it (which likely isn’t what you want).
+- Constructors are allowed to delegate (transfer responsibility for) initialization to another constructor from the same class type. This process is sometimes called constructor chaining and such constructors are called delegating constructors
+- If you have multiple constructors, consider whether you can use delegating constructors to reduce duplicate code.
+- Members for which the user must provide initialization values should be defined first (and as the leftmost parameters of the constructor). Members for which the user can optionally provide initialization values (because the default values are acceptable) should be defined second (and as the rightmost parameters of the constructor)
+
+Temporary class Objects
+- A temporary object (sometimes called an anonymous object or an unnamed object) is an object that has no name and exists only for the duration of a single expression
+
