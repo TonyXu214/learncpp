@@ -1438,3 +1438,13 @@ Delegating constructors
 Temporary class Objects
 - A temporary object (sometimes called an anonymous object or an unnamed object) is an object that has no name and exists only for the duration of a single expression
 
+Introduction to the copy constructor
+- A copy constructor is a constructor that is used to initialize an object with an existing object of the same type. After the copy constructor executes, the newly created object should be a copy of the object passed in as the initializer.
+- If you do not provide a copy constructor for your classes, C++ will create a public implicit copy constructor for you.
+- By default, the implicit copy constructor will do memberwise initialization. This means each member will be initialized using the corresponding member of the class passed in as the initializer.
+- A copy constructor should not do anything other than copy an object. This is because the compiler may optimize the copy constructor out in certain cases. If you are relying on the copy constructor for some behavior other than just copying, that behavior may or may not occur.
+- Copy constructors should have no side effects beyond copying.
+- Prefer the implicit copy constructor, unless you have a specific reason to create your own.
+- If you write your own copy constructor, the parameter should be a const lvalue reference.
+- If we prefer, we can explicitly request the compiler create a default copy constructor for us using the = default syntax
+- Occasionally we run into cases where we do not want objects of a certain class to be copyable. We can prevent this by marking the copy constructor function as deleted, using the = delete syntax
