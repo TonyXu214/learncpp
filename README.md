@@ -1448,3 +1448,32 @@ Introduction to the copy constructor
 - If you write your own copy constructor, the parameter should be a const lvalue reference.
 - If we prefer, we can explicitly request the compiler create a default copy constructor for us using the = default syntax
 - Occasionally we run into cases where we do not want objects of a certain class to be copyable. We can prevent this by marking the copy constructor function as deleted, using the = delete syntax
+
+Class initialization and copy elision
+- List initialization disallows narrowing conversions
+- Copy initialization only considers non-explicit constructors/conversion functions
+- List initialization prioritizes matching list constructors over other matching constructors
+- Copy elision is a compiler optimization technique that allows the compiler to remove unnecessary copying of objects.
+- When the compiler optimizes away a call to the copy constructor, we say the constructor has been elided
+- copy initialization is copying using =, whereas copy constructor takes an object of the same type
+  - they are two different things!!
+- Unlike other types of optimization, copy elision is exempt from the “as-if” rule. That is, copy elision is allowed to elide the copy constructor even if the copy constructor has side effects (such as printing text to the console)! This is why copy constructors should not have side effects other than copying -- if the compiler elides the call to the copy constructor, the side effects won’t execute, and the observable behavior of the program will change
+- It’s not important to memorize when the compiler does / doesn’t do copy elision. Just know that it is an optimization that your compiler will perform if it can, and if you expect to see your copy constructor called and it isn’t, copy elision is probably why.
+
+Converting constructors and the explicit keyword
+- Instead, the compiler will look to see if we have defined some function that it can use to perform such a conversion. Such a function is called a user-defined conversion.
+- A constructor that can be used to perform an implicit conversion is called a converting constructor. By default, all constructors are converting constructors.
+- only one user-defined conversion may be applied to perform an implicit conversion, and this example requires two.
+- An implicit conversion can be trivially converted into an explicit definition by using direct list initialization (or direct initialization).
+- we can use the explicit keyword to tell the compiler that a constructor should not be used as a converting constructor
+- An explicit constructor cannot be used to do copy initialization or copy list initialization
+- An explicit constructor cannot be used to do implicit conversions (since this uses copy initialization or copy list initialization)
+- copy initialization, copy list initialization used when passing in arguments
+- Copy initialization is also used whenever values are implicitly copied or converted, such as when passing arguments to a function by value, returning from a function by value, or catching exceptions by value.
+- The modern best practice is to make any constructor that will accept a single argument explicit by default. This includes constructors with multiple parameters where most or all of them have default values.
+- Make any constructor that accepts a single argument explicit by default. If an implicit conversion between types is both semantically equivalent and performant, you can consider making the constructor non-explicit.
+- Do not make copy or move constructors explicit, as these do not perform conversions.
+
+
+
+
