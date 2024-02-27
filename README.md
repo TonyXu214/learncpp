@@ -1474,6 +1474,43 @@ Converting constructors and the explicit keyword
 - Make any constructor that accepts a single argument explicit by default. If an implicit conversion between types is both semantically equivalent and performant, you can consider making the constructor non-explicit.
 - Do not make copy or move constructors explicit, as these do not perform conversions.
 
+### Chapter 15
+The hidden “this” pointer and member function chaining
+- Inside every member function, the keyword this is a const pointer that holds the address of the current implicit object
+- Although the call to function setID(2) looks like it only has one argument, it actually has two! When compiled, the compiler rewrites the expression simple.setID(2); as follows
+`Simple::setID(&simple, 2); // note that simple has been changed from an object prefix to a function argument!`
+- `void setID(int id) { m_id = id; }` becomes `static void setID(Simple* const this, int id) { this->m_id = id; }`
+- All non-static member functions have a this const pointer that holds the address of the implicit object.
+- Second, it can sometimes be useful to have a member function return the implicit object as a return value. The primary reason to do this is to allow member functions to be “chained” together, so several member functions can be called on the same object in a single expression! This is called function chaining (or method chaining)
+- For non-const member functions, this is a const pointer to a non-const value (meaning this cannot be pointed at something else, but the object pointing to may be modified). With const member functions, this is a const pointer to a const value (meaning the pointer cannot be pointed at something else, nor may the object being pointed to be modified).
 
+Classes and header files
+- Member functions can be defined outside the class definition just like non-member functions. The only difference is that we must prefix the member function names with the name of the class type (in this case, Date::) so the compiler knows we’re defining a member of that class type rather than a non-member
+- Prefer to put your class definitions in a header file with the same name as the class. Trivial member functions (such as access functions, constructors with empty bodies, etc…) can be defined inside the class definition.
+- Prefer to define non-trivial member functions in a source file with the same name as the class.
+- Member functions defined inside the class definition are implicitly inline
+- Member functions defined outside the class definition are not implicitly inline
+- Functions defined inside the class definition are implicitly inline, which allows them to be #included into multiple code files without violating the ODR.
+- Functions defined outside the class definition are not implicitly inline. They can be made inline by using the inline keyword.
+- Finally, for template classes, template member functions defined outside the class are almost always defined inside the header file, beneath the class definition. Just like non-member template functions, the compiler needs to see the full template definition in order to instantiate it.
+- Put any default arguments for member functions inside the class definition.
 
+Nested types (member types)
+- Define any nested types at the top of your class type.
+- Fourth, class types act as a scope region for names declared within, just as namespaces do
+- Class types can also contain nested typedefs or type aliases:
+- In C++, a nested class does not have access to the this pointer of the outer (containing) class, so nested classes can not directly access the members of the outer class
+- because nested classes are members of the outer class, they can access any private members of the outer class that are in scope
+
+Introduction to destructors
+- classes have another type of special member function that is called automatically when an object of a non-aggregate class type is destroyed. This function is called a destructor.
+- Like constructors, destructors have specific naming rules:
+  - The destructor must have the same name as the class, preceded by a tilde (~).
+  - The destructor can not take arguments.
+  - The destructor has no return type.
+- If a non-aggregate class type object has no user-declared destructor, the compiler will generate a destructor with an empty body.
+- the std::exit() function, can be used to terminate your program immediately. When the program is terminated immediately, the program just ends. Local variables are not destroyed first, and because of this, no destructors will be called. Be wary if you’re relying on your destructors to do necessary cleanup work in such a case.
+
+Class templates with member functions
+- Any member function templates defined outside the class definition should be defined just below the class definition (in the same file).
 
