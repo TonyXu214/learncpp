@@ -1514,3 +1514,17 @@ Introduction to destructors
 Class templates with member functions
 - Any member function templates defined outside the class definition should be defined just below the class definition (in the same file).
 
+Static member Variables
+- Unlike normal member variables, static member variables are shared by all objects of the class.
+- Although you can access static members through objects of the class (as shown with first.s_value and second.s_value in the example above), static members exist even if no objects of the class have been instantiated!
+- Static members are global variables that live inside the scope region of the class.
+- Because static member variables are essentially global variables, you must explicitly define (and optionally initialize) the static member outside of the class, in the global scope
+- Note that this static member definition is not subject to access controls: you can define and initialize the value even if it’s declared as private (or protected) in the class.
+- Do not put the static member definition in a header file (much like a global variable, if that header file gets included more than once, you’ll end up with multiple definitions, which will cause a compile error)
+- when the static member is a constant integral type (which includes char and bool) or a const enum, the static member can be initialized inside the class definition:
+- the preferred method of defining and initializing static members is using static inline
+- static constexpr members can also be initialized inside the class definition without explicit use of the inline keyword
+- Make your static members inline or constexpr so they can be initialized inside the class definition.
+
+
+
