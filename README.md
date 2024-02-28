@@ -1526,5 +1526,29 @@ Static member Variables
 - static constexpr members can also be initialized inside the class definition without explicit use of the inline keyword
 - Make your static members inline or constexpr so they can be initialized inside the class definition.
 
+Static member functions
+- Member variables aren’t the only type of member that can be made static. Member functions can be made static as well.
+- Static member functions have no *this pointer
+- static member functions can directly access other static members (variables or functions), but not non-static members
+- Instead of writing a class with all static members, consider writing a normal class and instantiating a global instance of it (global variables have static duration).
+- a static class is preferable when you have static data members and/or need access controls. Otherwise, prefer a namespace.
+  - classes have access controls!
 
+Friend non-member functions
+- What we really need is some way to subvert the access control system on a case by case basis
+- Inside the body of a class, a **friend declaration** (using the friend keyword) can be used to tell the compiler that some other class or function is now a friend.
+- In C++, a friend is a class or function (member or non-member) that has been granted full access to the private and protected members of another class
+- Friendship is always granted by the class whose members will be accessed (not by the class or function desiring access). Between access controls and granting friendship, a class always retains the ability to control who can access its members.
+- A friend function is a function (member or non-member) that can access the private and protected members of a class as though it were a member of that class. In all other regards, the friend function is a normal function
+- Friend functions defined inside a class are non-member functions
+- Because print() is defined as a friend, it is instead treated as a non-member function
+- A friend function should prefer to use the class interface over direct access whenever possible.
+- we mentioned that we should prefer non-member functions over member functions. For the same reasons given there, we should prefer non-friend functions over friend functions
+- Prefer to implement a function as a non-friend when possible and reasonable.
+
+Friend classes and friend member functions
+- A friend class is a class that can access the private and protected members of another class.
+- First, even though Display is a friend of Storage, Display has no access to the *this pointer of Storage objects
+- friendship is not reciprocal. Just because Display is a friend of Storage does not mean Storage is also a friend of Display
+- Class friendship is also not transitive. If class A is a friend of B, and B is a friend of C, that does not mean A is a friend of C
 
