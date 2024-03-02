@@ -1552,3 +1552,97 @@ Friend classes and friend member functions
 - friendship is not reciprocal. Just because Display is a friend of Storage does not mean Storage is also a friend of Display
 - Class friendship is also not transitive. If class A is a friend of B, and B is a friend of C, that does not mean A is a friend of C
 
+Introduction to containers and arrays
+- Containers also exist in programming, to make it easier to create and manage (potentially large) collections of objects. In general programming, a container is a data type that provides storage for a collection of unnamed objects (called elements).
+- We typically use containers when we need to work with a set of related values.
+- The elements of a container do not have their own names, so that the container can have as many elements as we want without having to give each element a unique name.
+- Each container provides some method to access these elements, but how depends on the specific type of container.
+- In programming, the number of elements in a container is often called it’s length (or sometimes count).
+- We’ll prefer the term “length” when referring to the number of elements in a container, and use the term “size” to refer to amount of storage required by an object.
+- In C++, containers are typically implemented as class templates, so that the user can provide the desired element type as a template type argument.
+- The opposite of a homogenous container is a heterogenous container, which allows elements to be different types. Heterogeneous containers are typically supported by scripting languages (such as Python)
+- The Containers library is a part of the C++ standard library that contains various class types that implement some common types of containers. A class type that implements a container is sometimes called a container class.
+- In C++, the definition of “container” is narrower than the general programming definition. Only the class types in the Containers library are considered to be containers in C++.
+- An array is a container data type that stores a sequence of values contiguously (meaning each element is placed in an adjacent memory location, with no gaps)
+- The C++ standard calls these “arrays”, but in modern C++ these are often called C arrays or C-style arrays in order to differentiate them from the similarly named std::array
+
+Introduction to std::vector and list constructors
+- Containers typically have a special constructor called a list constructor that allows us to construct an instance of the container using an initializer list. The list constructor does three things
+  - Ensures the container has enough storage to hold all the initialization values (if needed).
+  - Sets the length of the container to the number of elements in the initializer list (if needed).
+  - Initializes the elements to the values in the initializer list (in sequential order).
+- Use list initialization with an initializer list of values to construct a container with those element values.
+- In C++, the most common way to access array elements is by using the name of the array along with the subscript operator (operator[])
+- To select a specific element, inside the square brackets of the subscript operator, we provide an integral value that identifies which element we want to select. This integral value is called a subscript (or informally, an index)
+- operator[] does not do any kind of bounds checking, meaning it does not check to see whether the index is within the bounds of 0 to N-1 (inclusive). Passing an invalid index to operator[] will return in undefined behavior
+- bc continguous, this means arrays do not have any per-element overhead. It also allows the compiler to quickly calculate the address of any element in the array.
+- Arrays are one of the few container types that allow random access, meaning every element in the container can be accessed directly and with equal speed, regardless of the number of elements in the container.
+- Fortunately, std::vector has an explicit constructor (explicit std::vector<T>(int)) that takes a single int value defining the length of the std::vector to construct
+- Each of the created elements are value-initialized, which for int does zero-initialization (and for class types calls the default constructor).
+- However, there is one non-obvious thing about using this constructor: it must be called using direct initialization.
+- When constructing a class type object, a matching list constructor is selected over other matching constructors.
+- When constructing a container (or any type that has a list constructor) with initializers that are not element values, use direct initialization.
+- When providing a default initializer for a member of a class type:
+  - We must use either copy initialization or list initialization.
+```
+struct Foo
+{
+    std::vector<int> v{ std::vector<int>(8) }; // ok
+};
+```
+- A const std::vector must be initialized, and then cannot be modified. The elements of such a vector are treated as if they were const.
+- One of the biggest downsides of std::vector is that it cannot be made constexpr. If you need a constexpr array, use std::array.
+
+std::vector and the unsigned length and subscript problem
+- Each of the standard library container classes defines a nested typedef member named size_type
+- size_type is a nested typedef defined in standard library container classes, used as the type for the length (and indices, if supported) of the container class.
+- size_type defaults to std::size_t, and since this is almost never changed, we can reasonably assume size_type is an alias for std::size_t.
+- When accessing the size_type member of a container class, we must scope qualify it with the fully templated name of the container class. For example, std::vector<int>::size_type
+- Unlike std::string and std::string_view, which have both a length() and a size() member function (that do the same thing), std::vector (and most other container types in C++) only has size()
+- C++20 introduces the std::ssize() non-member function, which returns the length as a large signed integral type (usually std::ptrdiff_t, which is the type normally used as the signed counterpart to std::size_t)
+- The at() member function can be used to do array access with runtime bounds checking
+- Because it does runtime bounds checking on every call, at() is slower (but safer) than operator[]. Despite being less safe, operator[] is typically used over at(), primarily because it’s better to do bounds checking before we call at(), so we don’t call it with an invalid index in the first place
+- The simplest thing to do in this case is use a variable of type std::size_t as your index, and do not use this variable for anything but indexing.
+
+Passing std::vector
+- Therefore, when we use a std::vector as a function parameter, we have to explicitly specify the element type
+- Although CTAD will work to deduce an vector’s element type from initializers when it is defined, CTAD doesn’t (currently) work with function parameters.
+- One option here is to assert on arr.size(), which will catch such errors when run in a debug build configuration. Because std::vector::size() is a non-constexpr function, we can only do a runtime assert here.
+- A better option is to avoid using std::vectorin cases where you need to assert on array length. Using a type that supports constexpr arrays (e.g. std::array) is probably a better choice, as you can static_assert on the length of a constexpr array.
+
+Returning std::vector, and an introduction to move semantics
+- The term copy semantics refers to the rules that determine how copies of objects are made
+- When ownership of data is transferred from one object to another, we say that data has been moved.
+- The cost of such a move is typically trivial (usually just two or three pointer assignments, which is way faster than copying an array of data!)
+- As an added benefit, when the temporary was then destroyed at the end of the expression, it would no longer have any data to destroy, so we wouldn’t have to pay that cost either
+- This is the essence of move semantics, which refers to the rules that determine how the data from one object is moved to another object
+- When move semantics is invoked, any data member that can be moved is moved, and any data member that can’t be moved is copied
+- Move semantics is an optimization that allows us, under certain circumstances, to inexpensively transfer ownership of some data members from one object to another object (rather than making a more expensive copy).
+- Data members that can’t be moved are copied instead.
+- Normally, when an object is being initialized with or assigned an object of the same type, copy semantics will be used (assuming the copy isn’t elided).
+  - However, when all of the following are true, move semantics will be invoked instead:
+  - The type of the object supports move semantics.
+  - The initializer or object being assigned from is an rvalue (temporary) object.
+  - The move isn’t elided.
+- Here’s the sad news: not that many types support move semantics. However, std::vector and std::string both do!
+- We can return move-capable types (like std::vector and std::string) by value. Such types will inexpensively move their values instead of making an expensive copy.
+- Such types should still be passed by const reference.
+
+Arrays and loops
+- Accessing each element of a container in some order is called traversal, or traversing the container. Traversal is also sometimes called iterating over or iterating through the container.
+
+Arrays, loops, and sign challenge solutions
+- Any name that depends on a type containing a template parameter is called a dependent name. Dependent names must be prefixed with the keyword typename in order to be used as a type.
+- In the above example, std::vector<T> is a type with a template parameter, so nested type std::vector<T>::size_type is a dependent name, and must be prefixed with typename to be used as a type
+- A more general solution is to have the compiler fetch the type of the array type object for us, so that we don’t have to explicitly specify the container type or template arguments. To do so, we can use the decltype keyword, which returns the type of its parameter
+- If you are dealing with very large arrays, or if you want to be a bit more defensive, you can use the strangely named std::ptrdiff_t. This typedef is often used as the signed counterpart to std::size_t.
+- In C++23, the Z suffix can be used to define a literal of the type that is the signed counterpart to std::size_t (probably std::ptrdiff_t):
+- Avoid array indexing with integral values whenever possible.
+
+Range-based for loops (for-each)
+- For best results, element_declaration should have the same type as the array elements, otherwise type conversion will occur.
+- Favor range-based for loops over regular for-loops when traversing containers.
+- In range-based for loops, the element declaration should use a (const) reference whenever you would normally pass that element type by (const) reference.
+- If using type deduction in a range-based for loop, consider always using const auto& unless you need to work with copies. This will ensure copies aren’t made even if the element type is later changed.
+- However, as of C++20, you can use the std::views::reverse capability of the Ranges library to create a reverse view of the elements that can be traversed:
+
