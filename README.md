@@ -1646,3 +1646,48 @@ Range-based for loops (for-each)
 - If using type deduction in a range-based for loop, consider always using const auto& unless you need to work with copies. This will ensure copies aren’t made even if the element type is later changed.
 - However, as of C++20, you can use the std::views::reverse capability of the Ranges library to create a reverse view of the elements that can be traversed:
 
+Array indexing and length using enumerators
+- Because enumerators are implicitly constexpr, conversion of an enumerator to an unsigned integral type is not considered a narrowing conversion, thus avoiding signed/unsigned indexing problems
+- Informally, we’ll call this a count enumerator, as its value represents the count of previously defined enumerators
+- If your array is constexpr, then you should static_assert instead. std::vector doesn’t support constexpr, but std::array (and C-style arrays) do.
+- Use a static_assert to ensure the length of your constexpr array matches your count enumerator.
+- Use an assert to ensure the length of your non-constexpr array matches your count enumerator.
+- because enum classes don’t have an implicit conversion to integral types, we run into a problem when we try to use their enumerators as array indices
+
+std::vector resizing and capacity
+- we’re going to focus on the one thing that makes std::vector significantly different than most of the other array types: the ability to resize itself after it has been instantiated.
+- Most array types have a significant limitation: the length of the array must be known at the point of instantiation, and then cannot be changed. Such arrays are called fixed-size arrays or fixed-length arrays. Both std::array and C-style arrays are fixed-size array types
+- On the other hand, std::vector is a dynamic array. A dynamic array (also called a resizable array) is an array whose size can be changed after instantiation.
+- A std::vector can be resized after instantiation by calling the resize() member function with the new desired length
+- First, when we resized the vector, the existing element values were preserved! Second, the new elements are value-initialized (which performs default-initialization for class types, and zero-initialization for other types)
+- In the context of a std::vector, capacity is how many elements the std::vector has allocated storage for, and length is how many elements are currently being used
+- When a std::vector changes the amount of storage it is managing, this process is called reallocation.
+- From the outside, it looks like the std::vector has been resized. But internally, the memory (and all of the elements) have actually been replaced
+- Reallocation is typically expensive. Avoid unnecessary reallocations.
+- Tracking capacity separately from length allows the std::vector to avoid some reallocations when length is changed.
+- A subscript is only valid if it is between 0 and the vector’s length (not its capacity)!
+- To help address this situation, std::vector has a member function called shrink_to_fit() that requests that the vector shrink its capacity to match its length
+  - This request is non-binding, meaning the implementation is free to ignore it
+
+std::vector and stack behavior
+- stack-like operations were instead added (as member functions) to the existing standard library container classes that support efficient insertion and removal of elements at one end (std::vector, std::deque and std::list).
+- push_back() (and emplace_back()) will increment the length of the vector, and will cause a reallocation to occur if the capacity is not sufficient to insert the value
+- The resize() member function changing the length of the vector is fine when we’re intending to use subscripts to access elements (since our indices need to be less than the length to be valid), but it causes problems when we’re using the vector as a stack
+- The reserve() member function can be used to reallocate a std::vector without changing the current length.
+- The resize() member function changes the length of the vector, and the capacity (if necessary).
+- The reserve() member function changes just the capacity (if necessary)
+- Use resize() when accessing a vector via indexing. This changes the length of the vector so your indices will be valid.
+- Use reserve() when accessing a vector using stack operations. This adds capacity without changing the length of the vector.
+- Both push_back() and emplace_back() push an element onto the stack. If the object to be pushed already exists, push_back() and emplace_back() are equivalent, and push_back() should be preferred.
+- However, in cases where we are creating a temporary object (of the same type as the vector’s element) for the purpose of pushing it onto the vector, emplace_back() can be more efficient
+- Instead, we pass the arguments that would be used to create the temporary object, and emplace_back() forwards them (using a feature called perfect forwarding) to the vector. This avoids a copy that would have otherwise been made.
+- Of note, push_back() won’t use explicit constructors, whereas emplace_back() will
+- Prefer emplace_back() when creating a new temporary object to add to the container, or when you need to access an explicit constructor.
+  - Prefer push_back() otherwise
+
+std::vector<bool>
+- When a template class has a different implementation for a particular template type argument, this is called class template specialization.
+- std::vector<bool> is not a vector (it is not required to be contiguous in memory), nor does it hold bool values (it holds a collection of bits), nor does it meet C++’s definition of a container
+- The modern consensus is that std::vector<bool> should generally be avoided, as the performance gains are unlikely to be worth the incompatibility headaches due to it not being a proper container
+- Favor constexpr std::bitset, std::vector<char>, or 3rd party dynamic bitsets over std::vector<bool>.
+
