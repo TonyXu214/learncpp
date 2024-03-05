@@ -1691,3 +1691,19 @@ std::vector<bool>
 - The modern consensus is that std::vector<bool> should generally be avoided, as the performance gains are unlikely to be worth the incompatibility headaches due to it not being a proper container
 - Favor constexpr std::bitset, std::vector<char>, or 3rd party dynamic bitsets over std::vector<bool>.
 
+### Chapter 17
+
+Introduction to std::array
+- Dynamic arrays are powerful and convenient, but like everything in life, they make some tradeoffs for the benefits they offer.
+  - std::vector is slightly less performant than the fixed-size arrays. In most cases you probably won’t notice the difference (unless you’re writing sloppy code that causes lots of inadvertent reallocations).
+  - std::vector only supports constexpr in very limited contexts
+- In modern C++, it is really this latter point that’s significant. Constexpr arrays offer the ability to write code that is more robust, and can also be optimized more highly by the compiler.
+- Use std::array for constexpr arrays, and std::vector for non-constexpr arrays.
+- the length of a std::array must be a constant expression
+- non-const variables and runtime constants cannot be used for the length
+- std::array is an aggregate. This means it has no constructors, and instead is initialized using aggregate initialization. As a quick recap, aggregate initialization allows us to directly initialize the members of aggregates
+- If a std::array is defined without an initializer, the elements will be default initialized
+- If more initializers are provided in an initializer list than the defined array length, the compiler will error. If fewer initializers are provided in an initializer list than the defined array length, the remaining elements without initializers are value initialized
+- Even though the elements of a const std::array are not explicitly marked as const, they are still treated as const (because the whole array is const).
+- Use class template argument deduction (CTAD) to have the compiler deduce the type and length of a std::array from its initializers.
+- As a reminder, operator[] does not do bounds checking
