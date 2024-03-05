@@ -1707,3 +1707,13 @@ Introduction to std::array
 - Even though the elements of a const std::array are not explicitly marked as const, they are still treated as const (because the whole array is const).
 - Use class template argument deduction (CTAD) to have the compiler deduce the type and length of a std::array from its initializers.
 - As a reminder, operator[] does not do bounds checking
+- std::array is an aggregate! no ctors
+  - The actual reason is because when we allocate std::array on the stack, its storage is also stack-allocated
+
+std::array length and indexing
+- sign conversions are narrowing conversions, except when constexpr
+- the non-type template parameter representing the array length (N) has type std::size_t
+- In the case of std::array, size_type is always an alias for std::size_t
+- Note that the non-type template parameter defining the length of the std::array is explicitly defined as std::size_t rather than size_type. This is because size_type is a member of std::array, and isn’t defined at that point.
+- the length of a std::array is constexpr
+- To get compile-time bounds checking when we have a constexpr index, we can use the std::get() function template
