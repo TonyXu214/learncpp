@@ -1735,5 +1735,19 @@ std::array of class types, and brace elision
 - aggregates in C++ support a concept called brace elision
 - Generally, you can omit braces when initializing a std::array with scalar (single) values, or when initializing with class types or arrays where the type is explicitly named with each element
 - There is no harm in always initializing std::array with double braces, as it avoids having to think about whether brace-elision is applicable in a specific case or not
--
 
+Arrays of references via std::reference_wrapper
+- because references are not objects, you cannot make an array of references
+- The elements of an array must also be assignable, and references can’t be reseated
+- std::reference_wrapper is a standard library class template that lives in the <functional> header. It takes a type template argument T, and then behaves like a modifiable lvalue reference to T
+- There are a few things worth noting about std::reference_wrapper:
+  - Operator= will reseat a std::reference_wrapper (change which object is being referenced).
+  - std::reference_wrapper<T> will implicitly convert to T&.
+  - The get() member function can be used to get a T&. This is useful when we want to update the value of the object being referenced
+- std::ref() and std::cref() are shorter to type, they are still widely used to create std::reference_wrapper objects
+
+std::array and enumerations
+- eh some stuff here that seems obvious, might be worthwhile to go back and read
+
+Introduction to C-style arrays
+-
