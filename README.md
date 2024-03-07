@@ -1717,3 +1717,23 @@ std::array length and indexing
 - Note that the non-type template parameter defining the length of the std::array is explicitly defined as std::size_t rather than size_type. This is because size_type is a member of std::array, and isn’t defined at that point.
 - the length of a std::array is constexpr
 - To get compile-time bounds checking when we have a constexpr index, we can use the std::get() function template
+
+Passing and returning std::array
+- With a std::array, both the element type and array length are part of the type information of the object. Therefore, when we use a std::array as a function parameter, we have to explicitly specify both the element type and array length
+- One advantage that template parameters have over function parameters is that template parameters are compile-time constants. This means we can take advantage of capabilities that require constant expressions
+  - So one solution is to use std::get()
+- Unlike std::vector, std::array is not move-capable, so returning a std::array by value will make a copy of the array. The elements inside the array will be moved if they are move-capable, and copied otherwise.
+- It is okay to return a std:array by value when all of the following are true:
+  - The array isn’t huge.
+  - The element type is cheap to copy (or move).
+  - The code isn’t being used in a performance-sensitive context.
+- In cases where return by value is too expensive, we can use an out-parameter instead.
+- If you’re returning a std::array by value, your std::array probably isn’t constexpr, and you should consider using (and returning) std::vector instead
+
+std::array of class types, and brace elision
+- When initializing a std::array with a struct, class, or array and not providing the element type with each initializer, you’ll need an extra pair of braces so that the compiler will properly interpret what to initialize
+- aggregates in C++ support a concept called brace elision
+- Generally, you can omit braces when initializing a std::array with scalar (single) values, or when initializing with class types or arrays where the type is explicitly named with each element
+- There is no harm in always initializing std::array with double braces, as it avoids having to think about whether brace-elision is applicable in a specific case or not
+-
+
