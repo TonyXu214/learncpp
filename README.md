@@ -1750,4 +1750,10 @@ std::array and enumerations
 - eh some stuff here that seems obvious, might be worthwhile to go back and read
 
 Introduction to C-style arrays
--
+- they are the only array type natively supported by the language, the standard library array container types (e.g. std::array and std::vector) are typically implemented using a C-style array.
+- Just like std::array, when declaring a C-style array, the length of the array must be a constant expression
+- Unlike the standard library container classes (which use unsigned indices of type std::size_t only), the index of a C-style array can be a value of any integral type (signed or unsigned) or an unscoped enumeration. This means that C-style arrays are not subject to all of the sign conversion indexing issues that the standard library container classes have
+- Prefer omitting the length of a C-style array when explicitly initializing every array element with a value.
+- Just like std::array, C-style arrays can be const or constexpr
+- Applied to a C-style array, sizeof() returns the number of bytes used by the entire array
+
