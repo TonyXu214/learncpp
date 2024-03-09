@@ -1757,3 +1757,52 @@ Introduction to C-style arrays
 - Just like std::array, C-style arrays can be const or constexpr
 - Applied to a C-style array, sizeof() returns the number of bytes used by the entire array
 
+C-style array decay
+- In most cases, when a C-style array is used in an expression, the array will be implicitly converted into a pointer to the element type, initialized with the address of the first element (with index 0). Colloquially, this is called array decay
+- A decayed array pointer does not know how long the array it is pointing to is. The term “decay” indicates this loss of length type information.
+- C-style arrays are passed by address, even when it looks like they are passed by value.
+- Two C-style arrays with the same element type but different lengths will decay into the same pointer type.
+- One problem with declaring the function parameter as int* arr is that it’s not obvious that arr is supposed to be a pointer to an array of values rather than a pointer to a single integer. For this reason, when passing a C-style array, its preferable to use the alternate declaration form int arr[]
+- A function parameter expecting a C-style array type should use the array syntax (e.g. int arr[]) rather than pointer syntax (e.g. int *arr).
+- C-style strings (which are C-style arrays) use a null-terminator to mark the end of the string, so that they can be traversed even if they have decayed.
+- Avoid C-style arrays whenever practical.
+  - Prefer std::string_view for read-only strings (string literal symbolic constants and string parameters).
+  - Prefer std::string for modifiable strings.
+  - Prefer std::array for non-global constexpr arrays.
+  - Prefer std::vector for non-constexpr arrays.
+  - It is okay to use C-style arrays for global constexpr arrays. We’ll discuss this in a moment.
+- As parameters to functions or classes that want to handle non-constexpr C-style string arguments directly (rather than requiring a conversion to std::string_view). There are two possible reasons for this: First, converting a non-constexpr C-style string to a std::string_view requires traversing the C-style string to determine its length. If the function is in a performance critical section of code and the length isn’t needed (e.g. because the function is going to traverse the string anyway) then avoiding the conversion may be useful. Second, if the function (or class) calls other functions that expect C-style strings, converting to a std::string_view just to convert back may be suboptimal (unless you have other reasons for wanting a std::string_view).
+
+Pointer arithmetic and subscripting
+- Pointer arithmetic is a feature that allows us to apply certain integer arithmetic operators (addition, subtraction, increment, or decrement) to a pointer to produce a new memory address.
+- Given some pointer ptr, ptr + 1 returns the address of the next object in memory (based on the type being pointed to). So if ptr is an int*, and an int is 4 bytes, ptr + 1
+- ptr - 1 returns the address of the previous object in memory (based on the type being pointed to).
+- Pointer arithmetic returns the address of the next/previous object (based on the type being pointed to), not the next/previous address.
+- ptr[n] is a concise syntax equivalent to the more verbose expression *((ptr) + (n))
+- Because array elements are always sequential in memory, if ptr is a pointer to element 0 of an array, *(ptr + n) will return the n-th element in the array.
+- This is the primary reason arrays are 0-based rather than 1-based.
+- Favor subscripting when indexing from the start of the array (element 0), so the array indices line up with the element.
+- Favor pointer arithmetic when doing relative positioning from a given element.
+
+C-style strings
+- When defining C-style strings with an initializer, we highly recommend omitting the array length and letting the compiler calculate the length
+- Because C-style strings are C-style arrays, they will decay -- C-style string literals decay into a const char*
+- If you try to print a string that does not have a null terminator (e.g. because the null-terminator was overwritten somehow), the result will be undefined behavior
+- Array overflow or buffer overflow is a computer security issue that occurs when more data is copied into storage than the storage can hold. In such cases, the memory just beyond the storage will be overwritten, leading to undefined behavior. Malicious actors can potentially exploit such flaws to overwrite the contents of memory, hoping to change the program’s behavior in some advantageous way.
+- One important point to note is that C-style strings follow the same rules as C-style arrays. This means you can initialize the string upon creation, but you can not assign values to it using the assignment operator after that
+- Because C-style strings are C-style arrays, you can use std::size() (or in C++20, std::ssize()) to get the length of the string as an array. There are two caveats here:
+  - This doesn’t work on decayed strings.
+  - Returns the actual length of the C-style array, not the length of the string
+- An alternate solution is to use the strlen() function, which lives in the <cstring> header. strlen() will work on decayed arrays, and returns the length of the string being held, excluding the null terminator
+- Avoid non-const C-style string objects in favor of std::string.
+- The answer is that the output streams (e.g. std::cout) make some assumptions about your intent. If you pass it a non-char pointer, it will simply print the contents of that pointer (the address that the pointer is holding). However, if you pass it an object of type char* or const char*, it will assume you’re intending to print a string.
+
+Multidimensional C-style arrays
+- The dimension of an array is the number of indices needed to select an element. An array containing only a single dimension is called a single-dimensional array or a one-dimensional array (sometimes abbreviated as a 1d array)
+- Memory is linear (1-dimensional), so multidimensional arrays are actually stored as a sequential list of elements
+- C++ uses row-major order, where elements are sequentially placed in memory row-by-row, ordered from left to right, top to bottom:
+- Flattening an array is a process of reducing the dimensionality of an array (often down to a single dimension).
+- Introduced in C++23, std::mdspan is a modifiable view that provides a multidimensional array interface for a contiguous sequence of elements. By modifiable view, we mean that a std::mdspan is not just a read-only view (like std::string_view) -- if the underlying sequence of elements is non-const, those elements can be modified
+- std::mdspan let us define a view with as many dimensions as we want.
+
+
