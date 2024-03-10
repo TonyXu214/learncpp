@@ -1805,4 +1805,27 @@ Multidimensional C-style arrays
 - Introduced in C++23, std::mdspan is a modifiable view that provides a multidimensional array interface for a contiguous sequence of elements. By modifiable view, we mean that a std::mdspan is not just a read-only view (like std::string_view) -- if the underlying sequence of elements is non-const, those elements can be modified
 - std::mdspan let us define a view with as many dimensions as we want.
 
+### Chapter 18
+Sorting an array using selection sort
 
+Introduction to iterators
+- Range-based for-loops are a little more interesting, as the mechanism for iterating through our container is hidden -- and yet, they still work for all kinds of different structures (arrays, lists, trees, maps, etc…). How do these work? They use iterators.
+- An iterator is an object designed to traverse through a container
+- Once the appropriate type of iterator is created, the programmer can then use the interface provided by the iterator to traverse and access elements without having to worry about what kind of traversal is being done or how the data is being stored in the container
+- Iterating is such a common operation that all standard library containers offer direct support for iteration
+- The important thing is that the iterator takes care of the details of iterating through the container. All we need are four things: the begin point, the end point, operator++ to move the iterator to the next element (or the end), and operator* to get the value of the current element
+- Much like pointers and references, iterators can be left “dangling” if the elements being iterated over change address or are destroyed. When this happens, we say the iterator has been invalidated.
+- Some operations that modify containers (such as adding an element to a std::vector) can have the side effect of causing the elements in the container to change addresses. When this happens, existing iterators to those elements will be invalidated
+- Invalidated iterators can be revalidated by assigning a valid iterator to them (e.g. begin(), end())
+- The erase() function returns an iterator to the element one past the erased element (or end() if the last element was removed)
+
+Introduction to standard library algorithms
+- The functionality provided in the algorithms library generally fall into one of three categories:
+  - Inspectors -- Used to view (but not modify) data in a container. Examples include searching and counting.
+  - Mutators -- Used to modify data in a container. Examples include sorting and shuffling.
+  - Facilitators -- Used to generate a result based on values of the data members. Examples include objects that multiply values, or objects that determine what order pairs of elements should be sorted in.
+- Before using a particular algorithm, make sure performance and execution order guarantees work for your particular use case.
+- Favor using functions from the algorithms library over writing your own functionality to do the same thing.
+
+Timing your code
+- First, make sure you’re using a release build target, not a debug build target. Debug build targets typically turn optimization off, and that optimization can have a significant impact on the results. For example, using a debug build target, running the above std::sort example on the author’s machine took 0.0235 seconds -- 33 times as long
