@@ -1829,3 +1829,50 @@ Introduction to standard library algorithms
 
 Timing your code
 - First, make sure you’re using a release build target, not a debug build target. Debug build targets typically turn optimization off, and that optimization can have a significant impact on the results. For example, using a debug build target, running the above std::sort example on the author’s machine took 0.0235 seconds -- 33 times as long
+
+### Chapter 19
+Dynamic memory allocation with new and delete
+- C++ supports three basic types of memory allocation, of which you’ve already seen two.
+  - Static memory allocation happens for static and global variables. Memory for these types of variables is allocated once when your program is run and persists throughout the life of your program.
+  - Automatic memory allocation happens for function parameters and local variables. Memory for these types of variables is allocated when the relevant block is entered, and freed when the block is exited, as many times as necessary.
+  - Dynamic memory allocation is the topic of this article.
+- Third, most normal variables (including fixed arrays) are allocated in a portion of memory called the stack.
+  - small, 1mb
+- Dynamic memory allocation is a way for running programs to request memory from the operating system when needed.
+- This memory does not come from the program’s limited stack memory -- instead, it is allocated from a much larger pool of memory managed by the operating system called the heap.
+  - large, gbs
+- To allocate a single variable dynamically, we use the scalar (non-array) form of the new operator
+- The new operator creates the object using that memory, and then returns a pointer containing the address of the memory that has been allocated
+- Note that accessing heap-allocated objects is generally slower than accessing stack-allocated objects. Because the compiler knows the address of stack-allocated objects, it can go directly to that address to get a value. Heap allocated objects are typically accessed via pointer. This requires two steps: one to get the address of the object (from the pointer), and another to get the value.
+- When you dynamically allocate memory, you’re asking the operating system to reserve some of that memory for your program’s use.
+- Unlike static or automatic memory, the program itself is responsible for requesting and disposing of dynamically allocated memory.
+- When we are done with a dynamically allocated variable, we need to explicitly tell C++ to free the memory for reuse. For single variables, this is done via the scalar (non-array) form of the delete operator
+- The delete operator does not actually delete anything. It simply returns the memory being pointed to back to the operating system. The operating system is then free to reassign that memory to another application (or to this application again later)
+- Although it looks like we’re deleting a variable, this is not the case! The pointer variable still has the same scope as before, and can be assigned a new value just like any other variable
+- Note that deleting a pointer that is not pointing to dynamically allocated memory may cause bad things to happen
+- A pointer that is pointing to deallocated memory is called a dangling pointer. Dereferencing or deleting a dangling pointer will lead to undefined behavior
+- Set deleted pointers to nullptr unless they are going out of scope immediately afterward.
+- Consequently, the best practice is to check all memory requests to ensure they actually succeeded before using the allocated memory
+- Deleting a null pointer is okay, and does nothing. There is no need to conditionalize your delete statements.
+- Dynamically allocated memory stays allocated until it is explicitly deallocated or until the program ends (and the operating system cleans it up, assuming your operating system does that)
+- This is called a memory leak. Memory leaks happen when your program loses the address of some bit of dynamically allocated memory before giving it back to the operating system.
+- Memory leaks eat up free memory while the program is running, making less memory available not only to this program, but to other programs as well. Programs with severe memory leak problems can eat all the available memory, causing the entire machine to run slowly or even crash. Only after your program terminates is the operating system able to clean up and “reclaim” all leaked memory.
+
+Dynamically allocating arrays
+- Using the scalar version of delete on an array will result in undefined behavior, such as data corruption, memory leaks, crashes, or other problems
+- The answer is that array new[] keeps track of how much memory was allocated to a variable, so that array delete[] can delete the proper amount
+- A dynamic array functions identically to a decayed fixed array, with the exception that the programmer is responsible for deallocating the dynamic array via the delete[] keyword
+
+Destructors
+- A destructor is another special kind of class member function that is executed when an object of that class is destroyed
+
+Pointers to pointers and dynamic multidimensional arrays
+- We recommend avoiding using pointers to pointers unless no other options are available, because they’re complicated to use and potentially dangerous. It’s easy enough to dereference a null or dangling pointer with normal pointers — it’s doubly easy with a pointer to a pointer since you have to do a double-dereference to get to the underlying value!
+
+Void pointers
+- The void pointer, also known as the generic pointer, is a special type of pointer that can be pointed at objects of any data type! A void pointer is declared like a normal pointer, using the void keyword as the pointer’s type
+- Because a void pointer does not know what type of object it is pointing to, deleting a void pointer will result in undefined behavior. If you need to delete a void pointer, static_cast it back to the appropriate type first
+- It is not possible to do pointer arithmetic on a void pointer. This is because pointer arithmetic requires the pointer to know what size object it is pointing to, so it can increment or decrement the pointer appropriately
+- A void pointer is a pointer that can point to any type of object, but does not know what type of object it points to. A void pointer must be explicitly cast into another type of pointer to perform indirection. A null pointer is a pointer that does not point to an address. A void pointer can be a null pointer.
+- Thus, a void pointer refers to the type of the pointer, whereas a null pointer refers to the value (address) of the pointer.
+
