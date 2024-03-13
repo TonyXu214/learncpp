@@ -1911,3 +1911,38 @@ bool validate(int x, int y, std::function<bool(int, int)> fcn); // std::function
 - Because the native syntax to declare function pointers is ugly and error prone, we recommend using std::function.
 - In places where a function pointer type is only used once (e.g. a single parameter or return value), std::function can be used directly. In places where a function pointer type is used multiple times, a type alias to a std::function is a better choice (to prevent repeating yourself).
 
+The stack and the heap
+- The memory that a program uses is typically divided into a few different areas, called segments:
+  - The code segment (also called a text segment), where the compiled program sits in memory. The code segment is typically read-only.
+  - The bss segment (also called the uninitialized data segment), where zero-initialized global and static variables are stored.
+  - The data segment (also called the initialized data segment), where initialized global and static variables are stored.
+  - The heap, where dynamically allocated variables are allocated from.
+  - The call stack, where function parameters, local variables, and other function-related information are stored
+- it is worth knowing that sequential memory requests may not result in sequential memory addresses being allocated
+- The heap has advantages and disadvantages:
+  - Allocating memory on the heap is comparatively slow.
+  - Allocated memory stays allocated until it is specifically deallocated (beware memory leaks) or the application ends (at which point the OS should clean it up).
+  - Dynamically allocated memory must be accessed through a pointer. Dereferencing a pointer is slower than accessing a variable directly.
+  - Because the heap is a big pool of memory, large arrays, structures, or classes can be allocated here
+- The call stack keeps track of all the active functions (those that have been called but have not yet terminated) from the start of the program to the current point of execution, and handles allocation of all function parameters and local variables
+- When a function call is encountered, the function is pushed onto the call stack. When the current function ends, that function is popped off the call stack (this process is sometimes called unwinding the stack).
+- Thus, by looking at the functions that are currently on the call stack, we can see all of the functions that were called to get to the current point of execution.
+- the “items” we’re pushing and popping on the stack are called stack frames.
+- A stack frame keeps track of all of the data associated with one function call.
+- The “marker” is a register (a small piece of memory in the CPU) known as the stack pointer (sometimes abbreviated “SP”). The stack pointer keeps track of where the top of the call stack currently is.
+- We can make one further optimization: When we pop an item off the call stack, we only have to move the stack pointer down -- we don’t have to clean up or zero the memory used by the popped stack frame (the equivalent of emptying the mailbox). This memory is no longer considered to be “on the stack” (the stack pointer will be at or below this address), so it won’t be accessed. If we later push a new stack frame to this same memory, it will overwrite the old value we never cleaned up.
+- A stack frame is constructed and pushed on the stack. The stack frame consists of:
+  - The address of the instruction beyond the function call (called the return address). This is how the CPU remembers where to return to after the called function exits.
+  - All function arguments.
+  - Memory for any local variables
+  - Saved copies of any registers modified by the function that need to be restored when the function returns
+  - when the stack frame pops, return values can be handled in a number of different ways, depending on the computer’s architecture. Some architectures include the return value as part of the stack frame. Others use CPU registers
+  - A technical note: on some architectures, the call stack grows away from memory address 0. On others, it grows towards memory address 0. As a consequence, newly pushed stack frames may have a higher or a lower memory address than the previous ones
+  - Stack overflow happens when all the memory in the stack has been allocated -- in that case, further allocations begin overflowing into other sections of memory
+- The stack has advantages and disadvantages:
+  - Allocating memory on the stack is comparatively fast.
+  - Memory allocated on the stack stays in scope as long as it is on the stack. It is destroyed when it is popped off the stack.
+  - All memory allocated on the stack is known at compile time. Consequently, this memory can be accessed directly through a variable.
+  - Because the stack is relatively small, it is generally not a good idea to do anything that eats up lots of stack space. This includes allocating or copying large arrays or other memory-intensive structures.
+
+
