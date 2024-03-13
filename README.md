@@ -1945,4 +1945,10 @@ The stack and the heap
   - All memory allocated on the stack is known at compile time. Consequently, this memory can be accessed directly through a variable.
   - Because the stack is relatively small, it is generally not a good idea to do anything that eats up lots of stack space. This includes allocating or copying large arrays or other memory-intensive structures.
 
+Recursion
+- A recursive function in C++ is a function that calls itself
+- A tail call is a function call that occurs at the tail (end) of a function. Functions with recursive tail calls are fairly easy for the compiler to optimize into an iterative (non-recursive) function
+- A recursive termination is a condition that, when met, will cause the recursive function to stop calling itself
+- One technique, called memoization, caches the results of expensive function calls so the result can be returned when the same input occurs again
+- Generally favor iteration over recursion, except when recursion really makes sense.
 
