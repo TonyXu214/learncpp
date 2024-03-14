@@ -1952,3 +1952,29 @@ Recursion
 - One technique, called memoization, caches the results of expensive function calls so the result can be returned when the same input occurs again
 - Generally favor iteration over recursion, except when recursion really makes sense.
 
+Command line arguments
+- Command line arguments are optional string arguments that are passed by the operating system to the program when it is launched
+- argc is an integer parameter containing a count of the number of arguments passed to the program (think: argc = argument count). argc will always be at least 1, because the first argument is always the name of the program itself.
+- argv is where the actual argument values are stored (think: argv = argument values, though the proper name is “argument vectors”). Although the declaration of argv looks intimidating, argv is really just an array of char pointers
+- When you type something at the command line (or run your program from the IDE), it is the operating system’s responsibility to translate and route that request as appropriate. This not only involves running the executable, it also involves parsing any arguments to determine how they should be handled and passed to the application
+  - Generally, operating systems have special rules about how special characters like double quotes and backslashes are handled
+
+Ellipsis (and why to avoid them)
+- there are certain cases where it can be useful to be able to pass a variable number of parameters to a function. C++ provides a special specifier known as ellipsis (aka “…”) that allow us to do precisely this
+- Functions that use ellipsis take the form:
+```
+return_type function_name(argument_list, ...)
+```
+  - The argument_list is one or more normal function parameters. Note that functions that use ellipsis must have at least one non-ellipsis parameter. Any arguments passed to the function must match the argument_list parameters first.
+- The ellipsis (which are represented as three periods in a row) must always be the last parameter in the function. The ellipsis capture any additional arguments (if there are any). Though it is not quite accurate, it is conceptually useful to think of the ellipsis as an array that holds any additional parameters beyond those in the argument_list.
+- Note that va_start() can be called again any time we want to reset the va_list to point to the first parameter in the ellipses again.
+- However, note that ellipsis parameters have no type declarations.
+- However, the downside is that the compiler will no longer be able to warn you if you call the function with ellipsis arguments that do not make sense. When using the ellipsis, it is completely up to the caller to ensure the function is called with ellipsis arguments that the function can handle.
+- “Garbage in, garbage out”, which is a popular computer science phrase “used primarily to call attention to the fact that computers, unlike humans, will unquestioningly process the most nonsensical of input data and produce nonsensical output”
+- Not only do the ellipsis throw away the type of the parameters, it also throws away the number of parameters in the ellipsis.
+  - Method #2 is to use a sentinel value. A sentinel is a special value that is used to terminate a loop when it is encountered.
+  - Method #3 is decoder string, that tells the program how to interpret the parameters. In this example, we pass a string that encodes both the number of optional variables and their types. The cool thing is that this lets us deal with parameters of different types.
+    - e.g. pass in for first arg `'iidiid'` which means parse `int`, `int`, `double`, `int`, `int`, `double
+    - For those of you coming from C, this is what printf does!
+- In C++17, fold expressions were added, which significantly improves the usability of parameter packs, to the point where they are now a viable option.
+
