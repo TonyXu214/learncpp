@@ -1978,3 +1978,110 @@ return_type function_name(argument_list, ...)
     - For those of you coming from C, this is what printf does!
 - In C++17, fold expressions were added, which significantly improves the usability of parameter packs, to the point where they are now a viable option.
 
+Introduction to lambdas (anonymous functions)
+- A lambda expression (also called a lambda or closure) allows us to define an anonymous function inside another function
+- The syntax for lambdas is one of the weirder things in C++, and takes a bit of getting used to. Lambdas take the form
+```
+[ captureClause ] ( parameters ) -> returnType
+{
+    statements;
+}
+```
+  - The capture clause can be empty if no captures are needed.
+  - The parameter list can be empty if no parameters are required. It can also be omitted entirely unless a return type is specified.
+  - The return type is optional, and if omitted, auto will be assumed (thus using type deduction used to determine the return type). While we previously noted that type deduction for function return types should be avoided, in this context, it’s fine to use (because these functions are typically so trivial).
+- Following the best practice of defining things in the smallest scope and closest to first use, lambdas are preferred over normal functions when we need a trivial, one-off function to pass as an argument to some other function.
+- In the above example, we defined a lambda right where it was needed. This use of a lambda is sometimes called a function literal
+- In actuality, lambdas aren’t functions (which is part of how they avoid the limitation of C++ not supporting nested functions). They’re a special kind of object called a functor. Functors are objects that contain an overloaded operator() that make them callable like a function.
+- The only way of using the lambda’s actual type is by means of auto
+- When storing a lambda in a variable, use auto as the variable’s type.
+  - When passing a lambda to a function:
+  - If C++20 capable, use auto as the parameter’s type.
+  - Otherwise, use a function with a type template parameter or std::function parameter.
+- When a lambda has one or more auto parameter, the compiler will infer what parameter types are needed from the calls to the lambda.
+  - Because lambdas with one or more auto parameter can potentially work with a wide variety of types, they are called generic lambdas
+- When used in the context of a lambda, auto is just a shorthand for a template parameter.
+- As of C++17, lambdas are implicitly constexpr if the result satisfies the requirements of a constant expression
+  - This generally requires two things:
+    - The lambda must either have no captures, or all captures must be constexpr.
+    - The functions called by the lambda must be constexpr. Note that many standard library algorithms and math functions weren’t made constexpr until C++20 or C++23
+- One thing to be aware of is that a unique lambda will be generated for each different type that auto resolves to
+- In the above example, we define a lambda and then call it with two different parameters (a string literal parameter, and an integer parameter). This generates two different versions of the lambda (one with a string literal parameter, and one with an integer parameter).
+  - Most of the time, this is inconsequential. However, note that if the generic lambda uses static duration variables, those variables are not shared between the generated lambdas.
+- For common operations (e.g. addition, negation, or comparison) you don’t need to write your own lambdas, because the standard library comes with many basic callable objects that can be used instead. These are defined in the <functional> header
+
+Lambda captures
+- Unlike nested blocks, where any identifier defined in an outer block is accessible in the scope of the nested block, lambdas can only access specific kinds of identifiers: global identifiers, entities that are known at compile time, and entities with static storage duration
+- The capture clause is used to (indirectly) give a lambda access to variables available in the surrounding scope that it normally would not have access to.
+- When a lambda definition is executed, for each variable that the lambda captures, a clone of that variable is made (with an identical name) inside the lambda. These cloned variables are initialized from the outer scope variables of the same name at this point
+- The captured variables of a lambda are copies of the outer scope variables, not the actual variables.
+- Although lambdas look like functions, they’re actually objects that can be called like functions (these are called functors -- we’ll discuss how to create your own functors from scratch in a future lesson).
+  - When the compiler encounters a lambda definition, it creates a custom object definition for the lambda. Each captured variable becomes a data member of the object.
+  - At runtime, when the lambda definition is encountered, the lambda object is instantiated, and the members of the lambda are initialized at that point.
+- When a lambda is called, operator() is invoked. By default, this operator() treats captures as const, meaning the lambda is not allowed to modify those captures.
+- To allow modifications of variables that were captured, we can mark the lambda as mutable
+- When the lambda was called, the lambda captured a copy of ammo. When the lambda decremented ammo from 10 to 9 to 8, it decremented its own copy, not the original ammo value in main()
+- Because captured variables are members of the lambda object, their values are persisted across multiple calls to the lambda!
+- Much like functions can change the value of arguments passed by reference, we can also capture variables by reference to allow our lambda to affect the value of the argument.
+- To capture a variable by reference, we prepend an ampersand (&) to the variable name in the capture. Unlike variables that are captured by value, variables that are captured by reference are non-const, unless the variable they’re capturing is const
+- Capture by reference should be preferred over capture by value whenever you would normally prefer passing an argument to a function by reference
+- Multiple variables can be captured by separating them with a comma. This can include a mix of variables captured by value or by reference:
+- A default capture (also called a capture-default) captures all variables that are mentioned in the lambda. Variables not mentioned in the lambda are not captured if a default capture is used.
+- To capture all used variables by value, use a capture value of =.
+- To capture all used variables by reference, use a capture value of &.
+- Default captures can be mixed with normal captures. We can capture some variables by value and others by reference, but each variable can only be captured once.
+```
+// Capture health and armor by value, and enemies by reference.
+[health, armor, &enemies](){};
+
+// Capture enemies by reference and everything else by value.
+[=, &enemies](){};
+
+// Capture armor by value and everything else by reference.
+[&, armor](){};
+
+// Illegal, we already said we want to capture everything by reference.
+[&, &armor](){};
+
+// Illegal, we already said we want to capture everything by value.
+[=, armor](){};
+
+// Illegal, armor appears twice.
+[armor, &health, &armor](){};
+
+// Illegal, the default capture has to be the first element in the capture group.
+[armor, &](){};
+```
+- Sometimes we want to capture a variable with a slight modification or declare a new variable that is only visible in the scope of the lambda. We can do so by defining a variable in the lambda-capture without specifying its type
+- userArea will only be calculated once when the lambda is defined. The calculated area is stored in the lambda object and is the same for every call. If a lambda is mutable and modifies a variable that was defined in the capture, the original value will be overridden.
+- Only initialize variables in the capture if their value is short and their type is obvious. Otherwise it’s best to define the variable outside of the lambda and capture it.
+- Variables are captured at the point where the lambda is defined. If a variable captured by reference dies before the lambda, the lambda will be left holding a dangling reference.
+- Be extra careful when you capture variables by reference, especially with a default reference capture. The captured variables must outlive the lambda.
+- Because lambdas are objects, they can be copied. In some cases, this can cause problems.
+```
+#include <iostream>
+
+int main()
+{
+  int i{ 0 };
+
+  // Create a new lambda named count
+  auto count{ [i]() mutable {
+    std::cout << ++i << '\n';
+  } };
+
+  count(); // invoke count
+
+  auto otherCount{ count }; // create a copy of count
+
+  // invoke both count and the copy
+  count();
+  otherCount();
+
+  return 0;
+}
+```
+- Note that the output doesn’t change even if myInvoke takes fn by value. std::function doesn’t create a copy of the lambda if we create it with std::ref.
+- Standard library functions may copy function objects (reminder: lambdas are function objects). If you want to provide lambdas with mutable captured variables, pass them by reference using std::ref.
+- Try to avoid mutable lambdas. Non-mutable lambdas are easier to understand and don’t suffer from the above issues, as well as more dangerous issues that arise when you add parallel execution.
+
