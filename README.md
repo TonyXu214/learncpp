@@ -2085,3 +2085,22 @@ int main()
 - Standard library functions may copy function objects (reminder: lambdas are function objects). If you want to provide lambdas with mutable captured variables, pass them by reference using std::ref.
 - Try to avoid mutable lambdas. Non-mutable lambdas are easier to understand and don’t suffer from the above issues, as well as more dangerous issues that arise when you add parallel execution.
 
+### Chapter 21
+Introduction to operator overloading
+- In C++, operators are implemented as functions
+- Using function overloading to overload operators is called operator overloading
+- Limitations
+  - First, almost any existing operator in C++ can be overloaded. The exceptions are: conditional (?:), sizeof, scope (::), member selector (.), pointer member selector (.*), typeid, and the casting operators
+  - Second, you can only overload the operators that exist. You can not create new operators or rename existing operators. For example, you could not create an operator** to do exponents
+  - Third, at least one of the operands in an overloaded operator must be a user-defined type. This means you could overload operator+(int, Mystring), but not operator+(int, double)
+    - Because standard library classes are considered to be user-defined, this means you could define operator+(double, std::string)
+  - Fourth, it is not possible to change the number of operands an operator supports.
+  - Finally, all operators keep their default precedence and associativity (regardless of what they’re used for) and this can not be changed
+- An overloaded operator should operate on at least one program-defined type (either as a parameter of the function, or the implicit object).
+- When overloading operators, it’s best to keep the function of the operators as close to the original intent of the operators as possible.
+- If the meaning of an overloaded operator is not clear and intuitive, use a named function instead.
+- Operators that do not modify their operands (e.g. arithmetic operators) should generally return results by value.
+- Operators that modify their leftmost operand (e.g. pre-increment, any of the assignment operators) should generally return the leftmost operand by reference.
+
+Overloading the arithmetic operators using friend functions
+
