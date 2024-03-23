@@ -2104,3 +2104,97 @@ Introduction to operator overloading
 
 Overloading the arithmetic operators using friend functions
 
+Overloading operators using normal functions
+- Prefer overloading operators as normal functions instead of friends if it’s possible to do so without adding additional functions.
+
+Overloading the I/O operators
+- However, if you try to return std::ostream by value, you’ll get a compiler error. This happens because std::ostream specifically disallows being copied
+
+Overloading operators using member functions
+- Not everything can be overloaded as a friend function
+- The assignment (=), subscript ([]), function call (()), and member selection (->) operators must be overloaded as member functions, because the language requires them to be.
+- However, we are not able to overload operator<< as a member function. Why not? Because the overloaded operator must be added as a member of the left operand. In this case, the left operand is an object of type std::ostream. std::ostream is fixed as part of the standard library. We can’t modify the class declaration to add the overload as a member function of std::ostream.
+- Typically, we won’t be able to use a member overload if the left operand is either not a class (e.g. int), or it is a class that we can’t modify (e.g. std::ostream)
+- When dealing with binary operators that don’t modify the left operand (e.g. operator+), the normal or friend function version is typically preferred, because it works for all parameter types (even when the left operand isn’t a class object, or is a class that is not modifiable).
+- When dealing with binary operators that do modify the left operand (e.g. operator+=), the member function version is typically preferred.
+- The following rules of thumb can help you determine which form is best for a given situation:
+  - If you’re overloading assignment (=), subscript ([]), function call (()), or member selection (->), do so as a member function.
+  - If you’re overloading a unary operator, do so as a member function.
+  - If you’re overloading a binary operator that does not modify its left operand (e.g. operator+), do so as a normal function (preferred) or friend function.
+  - If you’re overloading a binary operator that modifies its left operand, but you can’t add members to the class definition of the left operand (e.g. operator<<, which has a left operand of type ostream), do so as a normal function (preferred) or friend function.
+  - If you’re overloading a binary operator that modifies its left operand (e.g. operator+=), and you can modify the definition of the left operand, do so as a member function.
+
+Overloading unary operators +, -, and !
+
+Overloading the comparison operators
+- Only define overloaded operators that make intuitive sense for your class.
+- This means that we only need to implement logic for operator== and operator<, and then the other four comparison operators can be defined in terms of those two
+```
+    friend bool operator== (const Cents& c1, const Cents& c2) { return c1.m_cents == c2.m_cents; }
+    friend bool operator!= (const Cents& c1, const Cents& c2) { return !(operator==(c1, c2)); }
+
+    friend bool operator< (const Cents& c1, const Cents& c2) { return c1.m_cents < c2.m_cents; }
+    friend bool operator> (const Cents& c1, const Cents& c2) { return operator<(c2, c1); }
+
+    friend bool operator<= (const Cents& c1, const Cents& c2) { return !(operator>(c1, c2)); }
+    friend bool operator>= (const Cents& c1, const Cents& c2) { return !(operator<(c1, c2)); }
+```
+- This way, if we ever need to change something, we only need to update operator== and operator< instead of all six comparison operators!
+- C++20 introduces the spaceship operator (operator<=>)
+
+Overloading the increment and decrement operators
+- compiler looks to see if the overloaded operator has an int parameter. If the overloaded operator has an int parameter, the operator is a postfix overload.
+```
+    Digit& operator++(); // prefix has no parameter
+    Digit& operator--(); // prefix has no parameter
+
+    Digit operator++(int); // postfix has an int parameter
+    Digit operator--(int); // postfix has an int parameter
+```
+
+Overloading the subscript operator
+- C++23 adds support for overloading operator[] with multiple subscripts.
+- if const and non const versions, the preferred solution is as follows:
+  - Refactor the logic into another function (usually a private const member function, but could be a non-member function).
+  - Have the non-const function call the const function and use const_cast to remove the const of the returned reference.
+- If the expression inside the assert evaluates to false (which means the user passed in an invalid index), the program will terminate with an error message, which is much better than the alternative (corrupting memory).
+- If you try to call operator[] on a pointer to an object, C++ will assume you’re trying to index an array of objects of that type.
+
+Overloading the parenthesis operator
+- The parenthesis operator (operator()) is a particularly interesting operator in that it allows you to vary both the type AND number of parameters it takes
+- There are two things to keep in mind: first, the parenthesis operator must be implemented as a member function. Second, in non-object-oriented C++, the () operator is used to call functions.
+- Operator() is also commonly overloaded to implement functors (or function object), which are classes that operate like functions. The advantage of a functor over a normal function is that functors can store data in member variables (since they are classes)
+- Operator() is sometimes overloaded with two parameters to index multidimensional arrays, or to retrieve a subset of a one dimensional array (with the two parameters defining the subset to return). Anything else is probably better written as a member function with a more descriptive name
+- Operator() is also often overloaded to create functors. Although simple functors (such as the example above) are fairly easily understood, functors are typically used in more advanced programming topics, and deserve their own lesson
+
+Overloading typecasts
+- User-defined conversions allow us to convert our class into another data type. Take a look at the following class
+- There are three things to note:
+  - To overload the function that casts our class to an int, we write a new function in our class called operator int(). Note that there is a space between the word operator and the type we are casting to. Such functions must be non-static members.
+  - User-defined conversions do not have parameters, as there is no way to pass arguments explicitly to them. They do still have a hidden *this parameter, pointing to the implicit object (which is the object to be converted)
+  - User-defined conversions do not declare a return type. The name of the conversion (e.g. int) is used as the return type, as it is the only return type allowed. This prevents redundancy.
+- The compiler will first note that function printInt takes an integer parameter. Then it will note that variable cents is not an int. Finally, it will look to see if we’ve provided a way to convert a Cents into an int. Since we have, it will call our operator int() function, which returns an int, and the returned int will be passed to printInt().
+- Such typecasts can also be invoked explicitly via static_cast
+- Explicit typecasts can only be invoked explicitly (e.g. during non-copy initialization or by using an explicit cast like static_cast).
+- Typecasts should be marked as explicit, except in cases where the class to be converted to is essentially synonymous.
+- In general, a converting constructor should be preferred to an overloaded typecast, as it allows the type being constructed to own the construction.
+
+Overloading the assignment operator
+- The copy assignment operator (operator=) is used to copy values from one object to another already existing object.
+- If a new object has to be created before the copying can occur, the copy constructor is used (note: this includes passing or returning objects by value).
+- If a new object does not have to be created before the copying can occur, the assignment operator is used
+- Because self-assignment is a rare event, some prominent C++ gurus recommend omitting the self-assignment guard even in classes that would benefit from it. We do not recommend this, as we believe it’s a better practice to code defensively and then selectively optimize later
+- Unlike other operators, the compiler will provide an implicit public copy assignment operator for your class if you do not provide a user-defined one. This assignment operator does memberwise assignment (which is essentially the same as the memberwise initialization that default copy constructors do).
+- Just like other constructors and operators, you can prevent assignments from being made by making your copy assignment operator private or using the delete keyword:
+- Note that if your class has const members, the compiler will instead define the implicit operator= as deleted. This is because const members can’t be assigned, so the compiler will assume your class should not be assignable
+- If you want a class with const members to be assignable (for all members that aren’t const), you will need to explicitly overload operator= and manually assign each non-const member.
+
+Shallow vs. deep copying
+- Because C++ does not know much about your class, the default copy constructor and default assignment operators it provides use a copying method known as a memberwise copy (also known as a shallow copy)
+- A deep copy allocates memory for the copy and then copies the actual value, so that the copy lives in distinct memory from the source.
+- Remember the rule of three? If a class requires a user-defined destructor, copy constructor, or copy assignment operator, then it probably requires all three. This is why. If we’re user-defining any of these functions, it’s probably because we’re dealing with dynamic memory allocation. We need the copy constructor and copy assignment to handle deep copies, and the destructor to deallocate memory.
+- The default copy constructor and default assignment operators do shallow copies, which is fine for classes that contain no dynamically allocated variables.
+- Classes with dynamically allocated variables need to have a copy constructor and assignment operator that do a deep copy.
+- Favor using classes in the standard library over doing your own memory management.
+
+Overloading operators and function templates
