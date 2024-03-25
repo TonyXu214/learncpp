@@ -2198,3 +2198,33 @@ Shallow vs. deep copying
 - Favor using classes in the standard library over doing your own memory management.
 
 Overloading operators and function templates
+
+### Chapter 22
+Introduction to smart pointers and move semantics
+- A Smart pointer is a composition class that is designed to manage dynamically allocated memory and ensure that memory gets deleted when the smart pointer object goes out of scope
+- Move semantics means the class will transfer ownership of the object rather than making a copy.
+- Deleting a nullptr is okay, as it does nothing.
+
+R-value references
+- R-value references are more often used as function Parameters
+- You should almost never return an r-value reference, for the same reason you should almost never return an l-value reference. In most cases, you’ll end up returning a hanging reference when the referenced object goes out of scope at the end of the function
+
+Move constructors and move assignment
+- Move constructors and move assignment should be marked as noexcept. This tells the compiler that these functions will not throw exceptions
+- The move constructor and move assignment are called when those functions have been defined, and the argument for construction or assignment is an rvalue. Most typically, this rvalue will be a literal or temporary value
+- The compiler will create an implicit move constructor and move assignment operator if all of the following are true:
+  - There are no user-declared copy constructors or copy assignment operators.
+  - There are no user-declared move constructors or move assignment operators.
+  - There is no user-declared destructor
+- If we construct an object or do an assignment where the argument is an l-value, the only thing we can reasonably do is copy the l-value. We can’t assume it’s safe to alter the l-value, because it may be used again later in the program. If we have an expression “a = b” (where b is an lvalue), we wouldn’t reasonably expect b to be changed in any way.
+- However, if we construct an object or do an assignment where the argument is an r-value, then we know that r-value is just a temporary object of some kind.
+- Move semantics is an optimization opportunity.
+- In the generateResource() function of the Auto_ptr4 example above, when variable res is returned by value, it is moved instead of copied, even though res is an l-value. The C++ specification has a special rule that says automatic objects returned from a function by value can be moved even if they are l-values.
+- But in move-enabled classes, it is sometimes desirable to delete the copy constructor and copy assignment functions to ensure copies aren’t made.
+- Since the goal of move semantics is to move a resource from a source object to a destination object, you might think about implementing the move constructor and move assignment operator using std::swap(). However, this is a bad idea, as std::swap() calls both the move constructor and move assignment on move-capable objects, which would result in an infinite recursion.
+- If you delete the copy constructor, the compiler will not generate an implicit move constructor (making your objects neither copyable nor movable). Therefore, when deleting the copy constructor, it is useful to be explicit about what behavior you want from your move constructors. Either explicitly delete them (making it clear this is the desired behavior), or default them (making the class move-only)
+- The rule of five says that if the copy constructor, copy assignment, move constructor, move assignment, or destructor are defined or deleted, then each of those functions should be defined or deleted.
+- While deleting only the move constructor and move assignment may seem like a good idea if you want a copyable but not movable object, this has the unfortunate consequence of making the class not returnable by value in cases where mandatory copy elision does not apply. This happens because a deleted move constructor is still declared, and thus is eligible for overload resolution. And return by value will favor a deleted move constructor over a non-deleted copy constructor.
+
+
+
