@@ -2258,3 +2258,73 @@ Circular dependency issues with std::shared_ptr, and std::weak_ptr
 - Because std::weak_ptr won’t keep an owned resource alive, it’s similarly possible for a std::weak_ptr to be left pointing to a resource that has been deallocated by a std::shared_ptr. However, std::weak_ptr has a neat trick up its sleeve -- because it has access to the reference count for an object, it can determine if it is pointing to a valid object or not! If the reference count is non-zero, the resource is still valid. If the reference count is zero, then the resource has been destroyed.
 - Note that if a std::weak_ptr is expired, then we shouldn’t call lock() on it, because the object being pointed to has already been destroyed, so there is no object to share. If you do call lock() on an expired std::weak_ptr, it will return a std::shared_ptr to nullptr
 - std::shared_ptr can be used when you need multiple smart pointers that can co-own a resource. The resource will be deallocated when the last std::shared_ptr goes out of scope. std::weak_ptr can be used when you want a smart pointer that can see and use a shared resource, but does not participate in the ownership of that resource.
+
+### Chapter 23
+Object relationships
+- This process of building complex objects from simpler ones is called object composition
+- When we build classes with data members, we’re essentially constructing a complex object from simpler parts, which is object composition. For this reason, structs and classes are sometimes referred to as composite types
+- To qualify as a composition, an object and a part must have the following relationship:
+  - The part (member) is part of the object (class)
+  - The part (member) can only belong to one object (class) at a time
+  - The part (member) has its existence managed by the object (class)
+  - The part (member) does not know about the existence of the object (class)
+- Because of this, composition is sometimes called a “death relationship”
+- We call this a unidirectional relationship, because the body knows about the heart, but not the other way around
+- A good rule of thumb is that each class should be built to accomplish a single task. That task should either be the storage and manipulation of some kind of data (e.g. Point2D, std::string), OR the coordination of its members (e.g. Creature). Ideally not both
+
+Aggregation
+- To qualify as an aggregation, a whole object and its parts must have the following relationship:
+  - The part (member) is part of the object (class)
+  - The part (member) can (if desired) belong to more than one object (class) at a time
+  - The part (member) does not have its existence managed by the object (class)
+  - The part (member) does not know about the existence of the object (class)
+- Implement the simplest relationship type that meets the needs of your program, not what seems right in real-life.
+- Compositions:
+  - Typically use normal member variables
+  - Can use pointer members if the class handles object allocation/deallocation itself
+  - Responsible for creation/destruction of parts
+- Aggregations:
+  - Typically use pointer or reference members that point to or reference objects that live outside the scope of the aggregate class
+  - Not responsible for creating/destroying parts
+- fixed arrays and the various standard library lists can’t hold references (because list elements must be assignable, and references can’t be reassigned).
+- std::reference_wrapper is a class that acts like a reference, but also allows assignment and copying, so it’s compatible with lists like std::vector.
+- std::reference_wrapper lives in the <functional> header.
+- When you create your std::reference_wrapper wrapped object, the object can’t be an anonymous object (since anonymous objects have expression scope, and this would leave the reference dangling).
+- When you want to get your object back out of std::reference_wrapper, you use the get() member function.
+
+Association
+- To qualify as an association, an object and another object must have the following relationship:
+  - The associated object (member) is otherwise unrelated to the object (class)
+  - The associated object (member) can belong to more than one object (class) at a time
+  - The associated object (member) does not have its existence managed by the object (class)
+  - The associated object (member) may or may not know about the existence of the object (class)
+- We can say that association models as “uses-a” relationship. The doctor “uses” the patient (to earn income). The patient uses the doctor (for whatever health purposes they need)
+- Sometimes objects may have a relationship with other objects of the same type. This is called a reflexive association
+
+Dependencies
+- A dependency occurs when one object invokes another object’s functionality in order to accomplish some specific task.
+- Dependencies typically are not members
+
+Container classes
+- a container class is a class designed to hold and organize multiple instances of another type (either another class, or a fundamental type)
+- Value containers are compositions that store copies of the objects that they are holding (and thus are responsible for creating and destroying those copies). Reference containers are aggregations that store pointers or references to other objects (and thus are not responsible for creation or destruction of those objects).
+- in C++, containers typically only hold one type of data
+
+std::initializer_list
+- When a compiler sees an initializer list, it automatically converts it into an object of type std::initializer_list. Therefore, if we create a constructor that takes a std::initializer_list parameter, we can create objects using the initializer list as an input
+- std::initializer_list is often passed by value. Much like std::string_view, std::initializer_list is a view. Copying a std::initializer_list does not copy the elements in the list
+- use the begin() member function to get an iterator to the std::initializer_list.
+- The a1 case uses direct initialization (which doesn’t consider list constructors), so this definition will call IntArray(int), allocating an array of size 5.
+- The a2 case uses list initialization (which favors list constructors). Both IntArray(int) and IntArray(std::initializer_list<int>) are possible matches here, but since list constructors are favored, IntArray(std::initializer_list<int>) will be called, allocating an array of size 1 (with that element having value 5)
+- List initialization favors matching list constructors over matching non-list constructors.
+- When initializing a container that has a list constructor:
+  - Use brace initialization when intending to call the list constructor (e.g. because your initializers are element values)
+  - Use direct initialization when intending to call a non-list constructor (e.g. because your initializers are not element values).
+- Adding a list constructor to an existing class that did not have one may break existing programs.
+- Note that if you implement a constructor that takes a std::initializer_list, you should ensure you do at least one of the following:
+  - Provide an overloaded list assignment operator
+  - Provide a proper deep-copying copy assignment operator
+  - Delete the copy assignment operator
+- If you provide list construction, it’s a good idea to provide list assignment as well.
+- Implementing a constructor that takes a std::initializer_list parameter allows us to use list initialization with our custom classes. We can also use std::initializer_list to implement other functions that need to use an initializer list, such as an assignment operator
+
