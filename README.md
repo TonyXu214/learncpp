@@ -2328,3 +2328,40 @@ std::initializer_list
 - If you provide list construction, it’s a good idea to provide list assignment as well.
 - Implementing a constructor that takes a std::initializer_list parameter allows us to use list initialization with our custom classes. We can also use std::initializer_list to implement other functions that need to use an initializer list, such as an assignment operator
 
+Introduction to inheritance
+- inheritance involves creating new objects by directly acquiring the attributes and behaviors of other objects and then extending or specializing them
+
+Basic inheritance in C++
+- Inheritance in C++ takes place between classes. In an inheritance (is-a) relationship, the class being inherited from is called the parent class, base class, or superclass, and the class doing the inheriting is called the child class, derived class, or subclass
+- A child class inherits both behaviors (member functions) and properties (member variables) from the parent (subject to some access restrictions that we’ll cover in a future lesson).
+
+Order of construction of derived classes
+- When C++ constructs derived objects, it does so in phases. First, the most-base class (at the top of the inheritance tree) is constructed first. Then each child class is constructed in order, until the most-child class (at the bottom of the inheritance tree) is constructed last.
+- C++ constructs derived classes in phases, starting with the most-base class (at the top of the inheritance tree) and finishing with the most-child class (at the bottom of the inheritance tree)
+
+Constructors and initialization of derived classes
+- The only real difference between this case and the non-inherited case is that before the Derived constructor can do anything substantial, the Base constructor is called first
+- C++ prevents classes from initializing inherited member variables in the member initializer list of a constructor
+- The answer has to do with const and reference variables. Consider what would happen if m_id were const. Because const variables must be initialized with a value at the time of creation, the base class constructor must set its value when the variable is created. However, when the base class constructor finishes, the derived class constructor’s member initializer lists are then executed
+- By restricting the initialization of variables to the constructor of the class those variables belong to, C++ ensures that all variables are initialized only once
+- Fortunately, C++ gives us the ability to explicitly choose which Base class constructor will be called! To do this, simply add a call to the Base class constructor in the member initializer list of the derived class
+- Note that it doesn’t matter where in the Derived constructor member initializer list the Base constructor is called -- it will always execute first
+- Private members can only be accessed by member functions of the same class. Note that this means derived classes can not access private members of the base class directly!
+- It is worth mentioning that constructors can only call constructors from their immediate parent/base class. Consequently, the C constructor could not call or pass parameters to the A constructor directly. The C constructor can only call the B constructor (which has the responsibility of calling the A constructor).
+- When a derived class is destroyed, each destructor is called in the reverse order of construction. In the above example, when c is destroyed, the C destructor is called first, then the B destructor, then the A destructor
+- If your base class has virtual functions, your destructor should also be virtual, otherwise undefined behavior will result in certain cases
+
+Inheritance and access specifiers
+- C++ has a third access specifier that we have yet to talk about because it’s only useful in an inheritance context. The protected access specifier allows the class the member belongs to, friends, and derived classes to access the member
+- using the protected access specifier is most useful when you (or your team) are going to be the ones deriving from your own classes, and the number of derived classes is reasonable.
+- Favor private members over protected members.
+- First, there are three different ways for classes to inherit from other classes: public, protected, and private.
+- If you do not choose an inheritance type, C++ defaults to private inheritance (just like members default to private access if you do not specify otherwise)
+- When you inherit a base class publicly, inherited public members stay public, and inherited protected members stay protected
+- Use public inheritance unless you have a specific reason to do otherwise.
+- Protected inheritance is the least common method of inheritance. It is almost never used, except in very particular cases
+- With private inheritance, all members from the base class are inherited as private
+- Note that this does not affect the way that the derived class accesses members inherited from its parent! It only affects the code trying to access those members through the derived class
+- Private inheritance can be useful when the derived class has no obvious relationship to the base class, but uses the base class for implementation internally. In such a case, we probably don’t want the public interface of the base class to be exposed through objects of the derived class (as it would be if we inherited publicly
+
+
