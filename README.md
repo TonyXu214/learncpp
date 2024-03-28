@@ -2403,3 +2403,41 @@ class Derived : public Mixin<Derived>
 - Second, and more serious is the diamond problem, which your author likes to call the “diamond of doom”. This occurs when a class multiply inherits from two classes which each inherit from a single base class.
 - Avoid multiple inheritance unless alternatives lead to more complexity.
 
+### Chapter 25
+Pointers and references to the base class of derived objects
+
+Virtual functions and polymorphism
+- A virtual function is a special type of member function that, when called, resolves to the most-derived version of the function for the actual type of the object being referenced or pointed to
+- A derived function is considered a match if it has the same signature (name, parameter types, and whether it is const) and return type as the base version of the function. Such functions are called overrides
+- Some modern compilers may give an error about having virtual functions and an accessible non-virtual destructor. If this is the case, add a virtual destructor to the base class. In the above program, add this to the definition of Base
+- Note that virtual function resolution only works when a virtual member function is called through a pointer or reference to a class type object.
+  - This works because the compiler can differentiate the type of the pointer or reference from the type of the object being pointed to or referenced.
+- Virtual function resolution only works when a member function is called through a pointer or reference to a class type object.
+- polymorphism refers to the ability of an entity to have multiple forms
+- Compile-time polymorphism refers to forms of polymorphism that are resolved by the compiler. These include function overload resolution, as well as template resolution
+- Runtime polymorphism refers to forms of polymorphism that are resolved at runtime. This includes virtual function resolution
+- A word of warning: the signature of the derived class function must exactly match the signature of the base class virtual function in order for the derived class function to be used.
+- If a function is virtual, all matching overrides in derived classes are implicitly virtual.
+- Never call virtual functions from constructors or destructors.
+- Since most of the time you’ll want your functions to be virtual, why not just make all functions virtual? The answer is because it’s inefficient -- resolving a virtual function call takes longer than resolving a regular one
+
+The override and final specifiers, and covariant return types
+- To address some common challenges with inheritance, C++ has two inheritance-related identifiers: override and final
+  - Note that these identifiers are not keywords -- they are normal words that have special meaning only when used in certain contexts. The C++ standard calls them “identifiers with special meaning”, but they are often referred to as “specifiers”.
+- To help address the issue of functions that are meant to be overrides but aren’t, the override specifier can be applied to any virtual function by placing the override specifier after the function signature (the same place a function-level const specifier goes)
+- If the function does not override a base class function (or is applied to a non-virtual function), the compiler will flag the function as an error
+- Because there is no performance penalty for using the override specifier and it helps ensure you’ve actually overridden the function you think you have, all virtual override functions should be tagged using the override specifier. Additionally, because the override specifier implies virtual, there’s no need to tag functions using the override specifier with the virtual keyword
+- Use the virtual keyword on virtual functions in a base class.
+- Use the override specifier (but not the virtual keyword) on override functions in derived classes. This includes virtual destructors.
+- In the case where we want to restrict the user from overriding a function, the final specifier is used in the same place the override specifier is, like so:
+- In the case where we want to prevent inheriting from a class, the final specifier is applied after the class name:
+- There is one special case in which a derived class virtual function override can have a different return type than the base class and still be considered a matching override. If the return type of a virtual function is a pointer or a reference to some class, override functions can return a pointer or a reference to a derived class. These are called covariant return types.
+- One interesting note about covariant return types: C++ can’t dynamically select types, so you’ll always get the type that matches the actual version of the function being called.
+
+Virtual destructors, virtual assignment, and overriding virtualization
+- You should always make your destructors virtual if you’re dealing with inheritance.
+- Whenever you are dealing with inheritance, you should make any explicit destructors virtual.
+- Now that the final specifier has been introduced into the language, our recommendations are as follows:
+  - If you intend your class to be inherited from, make sure your destructor is virtual.
+  - If you do not intend your class to be inherited from, mark your class as final. This will prevent other classes from inheriting from it in the first place, without imposing any other use restrictions on the class itself.
+
