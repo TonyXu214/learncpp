@@ -2364,4 +2364,42 @@ Inheritance and access specifiers
 - Note that this does not affect the way that the derived class accesses members inherited from its parent! It only affects the code trying to access those members through the derived class
 - Private inheritance can be useful when the derived class has no obvious relationship to the base class, but uses the base class for implementation internally. In such a case, we probably don’t want the public interface of the base class to be exposed through objects of the derived class (as it would be if we inherited publicly
 
+Adding new functionality to a derived class
+- To add new functionality to a derived class, simply declare that functionality in the derived class like normal
+
+Calling inherited functions and overriding behavior
+- When a member function is called with a derived class object, the compiler first looks to see if that member exists in the derived class. If not, it begins walking up the inheritance chain and checking whether the member has been defined in any of the parent classes. It uses the first one it finds.
+
+Hiding inherited functionality
+- You can only change the access specifiers of base members the derived class would normally be able to access.
+- Perhaps surprisingly, given a set of overloaded functions in the base class, there is no way to change the access specifier for a single overload. You can only change them all
+- You can also mark member functions as deleted in the derived class, which ensures they can’t be called at all through a derived object
+
+Multiple inheritance
+- Multiple inheritance enables a derived class to inherit members from more than one parent
+- A mixin (also spelled “mix-in”) is a small class that can be inherited from in order to add properties to a class. The name mixin indicates that the class is intended to be mixed into other classes, not instantiated on its own
+```
+	button.Box::setTopLeft({ 1, 1 });
+	button.Box::setBottomRight({ 10, 10 });
+	button.Label::setText("Submit");
+	button.Label::setFontSize(6);
+	button.Tooltip::setText("Submit the form to the server");
+```
+- Perhaps surprisingly, a derived class can inherit from a mixin base class using the derived class as a template type parameter. Such inheritance is called Curiously Recurring Template Pattern (CRTP for short), which looks like this:
+```
+// The Curiously Recurring Template Pattern (CRTP)
+
+template <class T>
+class Mixin
+{
+    // Mixin<T> can use template type parameter T to access members of Derived
+    // via (static_cast<T*>(this))
+};
+
+class Derived : public Mixin<Derived>
+{
+};
+```
+- Second, and more serious is the diamond problem, which your author likes to call the “diamond of doom”. This occurs when a class multiply inherits from two classes which each inherit from a single base class.
+- Avoid multiple inheritance unless alternatives lead to more complexity.
 
