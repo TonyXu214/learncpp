@@ -2472,3 +2472,47 @@ Virtual base classes
 - This creates what is called a virtual base class, which means there is only one base object
 - If Scanner and Printer share a PoweredDevice base class, who is responsible for creating it? The answer, as it turns out, is Copier. The Copier constructor is responsible for creating PoweredDevice. Consequently, this is one time when Copier is allowed to call a non-immediate-parent constructor directly
   - Note that this is true even in a single inheritance case: if Copier singly inherited from Printer, and Printer was virtually inherited from PoweredDevice, Copier is still responsible for creating PoweredDevice
+
+Object slicing
+- When we assign a Derived object to a Base object, only the Base portion of the Derived object is copied.
+- Consequently, the assigning of a Derived class object to a Base class object is called object slicing (or slicing for short)
+- Of course, slicing here can all be easily avoided by making the function parameter a reference instead of a pass by value
+  - for vectors: One way to address this is to make a vector of pointers
+- Another option is to use std::reference_wrapper, which is a class that mimics an reassignable reference:
+```
+int main()
+{
+    Derived d1{ 5 };
+    Derived d2{ 6 };
+    Base& b{ d2 };
+
+    b = d1; // this line is problematic 8
+    return 0;
+}
+```
+- The fourth line is where things go astray. Since b points at d2, and we’re assigning d1 to b, you might think that the result would be that d1 would get copied into d2 -- and it would, if b were a Derived. But b is a Base, and the operator= that C++ provides for classes isn’t virtual by default. Consequently, the assignment operator that copies a Base is invoked, and only the Base portion of d1 is copied into d2
+- As a result, you’ll discover that d2 now has the Base portion of d1 and the Derived portion of d2
+- Although C++ supports assigning derived objects to base objects via object slicing, in general, this is likely to cause nothing but headaches, and you should generally try to avoid slicing. Make sure your function parameters are references (or pointers) and try to avoid any kind of pass-by-value when it comes to derived classes.
+
+Dynamic casting
+- When dealing with polymorphism, you’ll often encounter cases where you have a pointer to a base class, but you want to access some information that exists only in a derived class
+- We know that C++ will implicitly let you convert a Derived pointer into a Base pointer (in fact, getObject() does just that). This process is sometimes called upcasting. However, what if there was a way to convert a Base pointer back into a Derived pointer? Then we could call Derived::getName() directly using that pointer, and not have to worry about virtual function resolution at al
+- C++ provides a casting operator named dynamic_cast that can be used for just this purpose. Although dynamic casts have a few different capabilities, by far the most common use for dynamic casting is for converting base-class pointers into derived-class pointers. This process is called downcasting
+- If a dynamic_cast fails, the result of the conversion will be a null pointer.
+- Always ensure your dynamic casts actually succeeded by checking for a null pointer result.
+- Also note that there are several cases where downcasting using dynamic_cast will not work:
+  - 1. With protected or private inheritance.
+  - 2. For classes that do not declare or inherit any virtual functions (and thus don’t have a virtual table).
+  - 3. In certain cases involving virtual base classes (see this page4 for an example of some of these cases, and how to resolve them).
+- It turns out that downcasting can also be done with static_cast. The main dierence is that static_cast does no runtime type checking to ensure that what you’re doing makes sense
+- Although all of the above examples show dynamic casting of pointers (which is more common), dynamic_cast can also be used with references. This works analogously to how dynamic_cast works with pointers.
+- Because C++ does not have a “null reference”, dynamic_cast can’t return a null reference upon failure. Instead, if the dynamic_cast of a reference fails, an exception of type std::bad_cast is thrown. We talk about exceptions later in this tutorial.
+- New programmers are sometimes confused about when to use static_cast vs dynamic_cast. The answer is quite simple: use static_cast unless you’re downcasting, in which case dynamic_cast is usually a better choice. However, you should also consider avoiding casting altogether and just use virtual functions.
+- In general, using a virtual function should be preferred over downcasting. However, there are times when downcasting is the better choice:
+  - When you can not modify the base class to add a virtual function (e.g. because the base class is part of the standard library)
+  - When you need access to something that is derived-class specic (e.g. an access function that only exists in the derived class)
+  - When adding a virtual function to your base class doesn’t make sense (e.g. there is no appropriate value for the base class to return). Using a pure virtual function may be an option here if you don’t need to instantiate the base class.
+- Run-time type information (RTTI) is a feature of C++ that exposes information about an object’s data type at runtime. This capability is leveraged by dynamic_cast. Because RTTI has a pretty signicant space performance cost, some compilers allow you to turn RTTI o as an optimization. Needless to say, if you do this, dynamic_cast won’t function correctly.
+
+Printing inherited classes using operator<<
+-
