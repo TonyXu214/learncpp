@@ -2516,3 +2516,16 @@ Dynamic casting
 
 Printing inherited classes using operator<<
 -
+
+### Chapter 26
+Template classes
+- Each templated member function defined outside the class declaration needs its own template declaration. Also, note that the name of the templated array class is Array<T>, not Array -- Array would refer to a non-templated version of a class named Array, unless Array is used inside of the class.
+- When the class name is used without template arguments inside of the class, the arguments are the same as the ones of the current instantiation
+- you should understand what std::vector<int> means now -- std::vector is actually a template class, and int is the type parameter to the template!
+- Just like with function templates, the compiler will only instantiate a class template if the class template is used (e.g. as the type of an object like intArray) in a translation unit. In order to perform the instantiation, the compiler must see both the full class template definition (not just a declaration) and the specific template type(s) needed.
+- Also remember that C++ compiles files individually. When main.cpp is compiled, the contents of the Array.h header (including the template class definition) are copied into main.cpp. When the compiler sees that we need two template instances, Array<int>, and Array<double>, it will instantiate these, and compile them as part of the main.cpp translation unit. Because the operator[] member function has a declaration, the compiler will accept a call to it, assuming it will be defined elsewhere.
+- When Array.cpp is compiled separately, the contents of the Array.h header are copied into Array.cpp, but the compiler won’t find any code in Array.cpp that requires the Array class template or Array<int>::operator[] function template to be instantiated -- so it won’t instantiate anything.
+- Thus, when the program is linked, we’ll get a linker error, because main.cpp made a call to Array<int>::operator[] but that template function was never instantiated!
+
+Template non-type parameters
+
