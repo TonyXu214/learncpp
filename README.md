@@ -2528,4 +2528,34 @@ Template classes
 - Thus, when the program is linked, we’ll get a linker error, because main.cpp made a call to Array<int>::operator[] but that template function was never instantiated!
 
 Template non-type parameters
+-
 
+Function template specialization
+- One nice thing about defining functions this way is that the non-template function doesn’t need to have the same signature as the function template. Note that print(const T&) uses pass by const reference, whereas print(double) uses pass by value.
+- Generally, prefer to define a non-template function if that option is available.
+- Another way to achieve a similar result is to use function template specialization to create a explicit specialization of the print() function template for type double:
+- note that if a matching non-template function and a template function specialization both exist, the non-template function will take precedence.
+- Explicit specializations are not implicitly inline, so if you define one in a header file, make sure you inline it to avoid ODR violations
+- Just like normal functions, function template specializations can be deleted (using = delete) if you want any function calls that resolve to the specialization to produce a compilation error
+- In general, you should avoid function template specialization
+
+Class template specialization
+- defining a class template specialization requires the non-specialized class to be defined first
+- In order to use a specialization, the compiler must be able to see the full definition of both the non-specialized class and the specialized class. If the compiler can only see the definition of the non-specialized class, it will use that instead of the specialization
+- For this reason, specialized classes are often defined in header files, below the definition of the non-specialized class, so that including a single header includes both the non-specialized class and any specializations. This ensures the specialization can always be seen whenever the non-specialized class can also be seen.
+- Be wary of putting a specialization in its own separate header file, with the intent of including the specialization’s header in any translation unit where the specialization is desired. It’s a bad idea to design code that transparently changes behavior based on the presence or absence of a header file.
+
+Partial template specialization
+- Partial template specialization allows us to specialize classes (but not individual functions!) where some, but not all, of the template parameters have been explicitly defined.
+```
+// overload of print() function for partially specialized StaticArray<char, size>
+template <int size> // size is still a template non-type parameter
+void print(const StaticArray<char, size>& array) // we're explicitly defining type char here
+{
+	for (int count{ 0 }; count < size; ++count)
+		std::cout << array[count];
+}
+```
+
+Partial template specialization for pointers
+-
