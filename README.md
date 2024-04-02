@@ -2559,3 +2559,87 @@ void print(const StaticArray<char, size>& array) // we're explicitly defining ty
 
 Partial template specialization for pointers
 -
+
+### Chapter 27
+The need for exceptions
+- the primary issue with return codes is that the error handling code ends up intricately linked to the normal control flow of the code. This in turn ends up constraining both how the code is laid out, and how errors can be reasonably handled
+- Exception handling provides a mechanism to decouple handling of errors or other exceptional circumstances from the typical control flow of your code
+
+Basic exception handling
+- Exceptions in C++ are implemented using three keywords that work in conjunction with each other: throw, try, and catch
+- In C++, a throw statement is used to signal that an exception or error case has occurred (think of throwing a penalty flag). Signaling that an exception has occurred is also commonly called raising an exception
+- To use a throw statement, simply use the throw keyword, followed by a value of any data type you wish to use to signal that an error has occurred. Typically, this value will be an error code, a description of the problem, or a custom exception class.
+```
+throw -1; // throw a literal integer value
+throw ENUM_INVALID_INDEX; // throw an enum value
+throw "Can not take square root of negative number"; // throw a literal C-style (const char*) string
+throw dX; // throw a double variable that was previously defined
+throw MyException("Fatal Error"); // Throw an object of class MyException
+```
+- Catch parameters work just like function parameters, with the parameter being available within the subsequent catch block. Exceptions of fundamental types can be caught by value, but exceptions of non-fundamental types should be caught by const reference to avoid making an unnecessary copy (and, in some cases, to prevent slicing)
+- No type conversion is done for exceptions
+- When an exception is raised (using throw), the compiler looks in the nearest enclosing try block (propagating up the stack if necessary to find an enclosing try block -- we’ll discuss this in more detail next lesson) to see if any of the catch handlers attached to the try block can handle that type of exception. If so, execution jumps to the top of the catch block, the exception is considered handled.
+- If no appropriate catch handlers exist in the nearest enclosing try block, the compiler continues to look at subsequent enclosing try blocks for a catch handler. If no appropriate catch handlers can be found before the end of the program, the program will fail with an exception error
+- Note that the compiler will not perform implicit conversions or promotions when matching exceptions with catch blocks! For example, a char exception will not match with an int catch block. An int exception will not match a float catch block. However, casts from a derived class to one of its parent classes will be performed
+- First, catch blocks may print an error (either to the console, or a log file) and then allow the function to proceed.
+- Second, catch blocks may return a value or error code back to the caller.
+- Third, a catch block may throw another exception. Because the catch block is outside of the try block, the newly thrown exception in this case is not handled by the preceding try block -- it’s handled by the next enclosing try block.
+- Fourth, a catch block in main() may be used to catch fatal errors and terminate the program in a clean way.
+
+Exceptions, functions, and stack unwinding
+- Try blocks catch exceptions not only from statements within the try block, but also from functions that are called within the try block.
+- If a matching exception handler is found, then execution jumps from the point where the exception is thrown to the top of the matching catch block. This requires unwinding the stack (removing the current function from the call stack) as many times as necessary to make the function handling the exception the top function on the call stack
+- Unwinding the stack destroys local variables in the functions that are unwound (which is good, because it ensures their destructors execute).
+
+Uncaught exceptions and catch-all handlers
+- The call stack may or may not be unwound if an exception is unhandled.
+- If the stack is not unwound, local variables will not be destroyed, which may cause problems if those variables have non-trivial destructors.
+- Although it might seem strange to not unwind the stack in such a case, there is a good reason for not doing so. An unhandled exception is generally something you want to avoid at all costs. If the stack were unwound, then all of the debug information about the state of the stack that led up to the throwing of the unhandled exception would be lost! By not unwinding, we preserve that information, making it easier to determine how an unhandled exception was thrown, and fix it.
+- Fortunately, C++ also provides us with a mechanism to catch all types of exceptions. This is known as a catch-all handler. A catch-all handler works just like a normal catch block, except that instead of using a specific type to catch, it uses the ellipses operator (…) as the type to catch. For this reason, the catch-all handler is also sometimes called an “ellipsis catch handler”
+- The catch-all handler must be placed last in the catch block chain.
+- For this reason, using a catch-all handler in main is often a good idea for production applications, but disabled (using conditional compilation directives) in debug builds.
+- If your program uses exceptions, consider using a catch-all handler in main, to help ensure orderly behavior when an unhandled exception occurs. Also consider disabling the catch-all handler for debug builds, to make it easier to identify how unhandled exceptions are occurring.
+
+Exceptions, classes, and inheritance
+- This leads to the question of what we should do if we’ve allocated resources in our constructor and then an exception occurs prior to the constructor finishing. How do we ensure the resources that we’ve already allocated get cleaned up properl
+- An exception class is just a normal class that is designed specifically to be thrown as an exception
+- Consequently, the first thing C++ does is check whether the exception handler for Base matches the Derived exception
+- Handlers for derived exception classes should be listed before those for base classes.
+- The good news is that all of these exception classes are derived from a single class called std::exception (defined in the <exception> header)
+- The one thing worth noting is that std::exception has a virtual member function named what() that returns a C-style string description of the exception
+- When an exception is thrown, the compiler makes a copy of the exception object to some piece of unspecified memory (outside of the call stack) reserved for handling exceptions. That way, the exception object is persisted regardless of whether or how many times the stack is unwound.
+- This means that the objects being thrown generally need to be copyable (even if the stack is not actually unwound).
+
+Rethrowing exceptions
+- Occasionally you may run into a case where you want to catch an exception, but not want to (or have the ability to) fully handle it at the point where you catch it. This is common when you want to log an error, but pass the issue along to the caller to actually handle.
+- However, when we throw an exception, the thrown exception is copy-initialized from variable exception. Variable exception has type Base, so the copy-initialized exception also has type Base (not Derived!). In other words, our Derived object has been sliced!
+  - Fortunately, C++ provides a way to rethrow the exact same exception as the one that was just caught. To do so, simply use the throw keyword from within the catch block (with no associated variable)
+  - This throw keyword that doesn’t appear to throw anything in particular actually re-throws the exact same exception that was just caught. No copies are made, meaning we don’t have to worry about performance killing copies or slicing
+- When rethrowing the same exception, use the throw keyword by itself
+
+Function try blocks
+- The call to base constructor A happens via the member initialization list, before the B constructor’s body is called. There’s no way to wrap a standard try block around it.
+- In this situation, we have to use a slightly modified try block called a function try block.
+- Function try blocks are designed to allow you to establish an exception handler around the body of an entire function, rather than around a block of code
+```
+class B : public A
+{
+public:
+	B(int x) try : A{x} // note addition of try keyword here
+	{
+	}
+	catch (...) // note this is at same level of indentation as the function itself
+	{
+                // Exceptions from member initializer list or constructor body are caught here
+
+                std::cerr << "Exception caught\n";
+
+                throw; // rethrow the existing exception
+	}
+}
+```
+- A function-level catch block for a constructor must either throw a new exception or rethrow the existing exception -- they are not allowed to resolve exceptions! Return statements are also not allowed, and reaching the end of the catch block will implicitly rethrow
+- Avoid letting control reach the end of a function-level catch block. Instead, explicitly throw, rethrow, or return.
+- When construction of an object fails, the destructor of the class is not called. Consequently, you may be tempted to use a function try block as a way to clean up a class that had partially allocated resources before failing. However, referring to members of the failed object is considered undefined behavior since the object is “dead” before the catch block executes. This means that you can’t use function try to clean up after a class.
+- Function try is useful primarily for either logging failures before passing the exception up the stack, or for changing the type of exception thrown.
+
