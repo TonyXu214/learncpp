@@ -2643,3 +2643,42 @@ public:
 - When construction of an object fails, the destructor of the class is not called. Consequently, you may be tempted to use a function try block as a way to clean up a class that had partially allocated resources before failing. However, referring to members of the failed object is considered undefined behavior since the object is “dead” before the catch block executes. This means that you can’t use function try to clean up after a class.
 - Function try is useful primarily for either logging failures before passing the exception up the stack, or for changing the type of exception thrown.
 
+Exception dangers and downsides
+- One of the biggest problems that new programmers run into when using exceptions is the issue of cleaning up resources when an exception occurs.
+- Unlike constructors, where throwing exceptions can be a useful way to indicate that object creation did not succeed, exceptions should never be thrown in destructors
+- Destructors should not throw exceptions.
+
+Exception specifications and noexcept
+- In C++, all functions are classified as either non-throwing or potentially throwing. A non-throwing function is one that promises not to throw exceptions that are visible to the caller. A potentially throwing function may throw exceptions that are visible to the caller.
+- Note that noexcept doesn’t actually prevent the function from throwing exceptions or calling other functions that are potentially throwing. This is allowed so long as the noexcept function catches and handles those exceptions internally, and those exceptions do not exit the noexcept function
+- The promise that a noexcept function makes to not throw exceptions that are visible to the caller is a contractual promise, not a promise enforced by the compiler. So while calling a noexcept function should be safe, any exception handling bugs in the noexcept function that cause the contract to be broken will result in termination of the program! This shouldn’t happen, but neither should bugs
+- For this reason, it’s best that noexcept functions don’t mess with exceptions at all, or call potentially throwing functions that could raise an exception. A noexcept function can’t have an exception handling bug if no exceptions can possibly be raised in the first place!
+- The noexcept specifier has an optional Boolean parameter. noexcept(true) is equivalent to noexcept, meaning the function is non-throwing. noexcept(false) means the function is potentially throwing. These parameters are typically only used in template functions, so that a template function can be dynamically created as non-throwing or potentially throwing based on some parameterized value.
+- The noexcept operator can also be used inside expressions. It takes an expression as an argument, and returns true or false if the compiler thinks it will throw an exception or not. The noexcept operator is checked statically at compile-time, and doesn’t actually evaluate the input expression
+- The noexcept operator can be used to conditionally execute code depending on whether it is potentially throwing or not. This is required to fulfill certain exception safety guarantees, which we’ll talk about in the next section.
+- An exception safety guarantee is a contractual guideline about how functions or classes will behave in the event an exception occurs. There are four levels of exception safety guarantees:
+  - No guarantee -- There are no guarantees about what will happen if an exception is thrown (e.g. a class may be left in an unusable state)
+  - Basic guarantee -- If an exception is thrown, no memory will be leaked and the object is still usable, but the program may be left in a modified state.
+  - Strong guarantee -- If an exception is thrown, no memory will be leaked and the program state will not be changed. This means the function must either completely succeed or have no side effects if it fails. This is easy if the failure happens before anything is modified in the first place, but can also be achieved by rolling back any changes so the program is returned to the pre-failure state.
+  - No throw / No fail guarantee -- The function will always succeed (no-fail) or fail without throwing an exception (no-throw).
+- The no-throw guarantee: if a function fails, then it won’t throw an exception. Instead, it will return an error code or ignore the problem. No-throw guarantees are required during stack unwinding when an exception is already being handled; for example, all destructors should have a no-throw guarantee (as should any functions those destructors call). Examples of code that should be no-throw:
+  - destructors and memory deallocation/cleanup functions
+  - functions that higher-level no-throw functions need to call
+- The no-fail guarantee: a function will always succeed in what it tries to do (and thus never has a need to throw an exception, thus, no-fail is a slightly stronger form of no-throw). Examples of code that should be no-fail:
+  - move constructors and move assignment (move semantics, covered in chapter 22)
+  - swap functions
+  - clear/erase/reset functions on containers
+  - operations on std::unique_ptr (also covered in chapter 22)
+  - functions that higher-level no-fail functions need to call
+- There are a few good reasons to mark functions a non-throwing:
+  - Non-throwing functions can be safely called from functions that are not exception-safe, such as destructors
+  - Functions that are noexcept can enable the compiler to perform some optimizations that would not otherwise be available. Because a noexcept function cannot throw an exception outside the function, the compiler doesn’t have to worry about keeping the runtime stack in an unwindable state, which can allow it to produce faster code.
+  - There are significant cases where knowing a function is noexcept allows us to produce more efficient implementations in our own code: the standard library containers (such as std::vector) are noexcept aware and will use the noexcept operator to determine whether to use move semantics (faster) or copy semantics (slower) in some places.
+- For your own code, always mark the following as noexcept:
+  - Move constructors
+  - Move assignment operators
+  - Swap functions
+- Always make move constructors, move assignment, and swap functions noexcept.
+- Make copy constructors and copy assignment operators noexcept when you can.
+- Use noexcept on other functions to express a no-fail or no-throw guarantee.
+- If you are uncertain whether a function should have a no-fail/no-throw guarantee, err on the side of caution and do not mark it with noexcept. Reversing a decision to use noexcept violates an interface commitment to the user about the behavior of the function, and may break existing code. Making guarantees stronger by later adding noexcept to a function that was not originally noexcept is considered safe
