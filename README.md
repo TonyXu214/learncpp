@@ -2682,3 +2682,6 @@ Exception specifications and noexcept
 - Make copy constructors and copy assignment operators noexcept when you can.
 - Use noexcept on other functions to express a no-fail or no-throw guarantee.
 - If you are uncertain whether a function should have a no-fail/no-throw guarantee, err on the side of caution and do not mark it with noexcept. Reversing a decision to use noexcept violates an interface commitment to the user about the behavior of the function, and may break existing code. Making guarantees stronger by later adding noexcept to a function that was not originally noexcept is considered safe
+
+std::move_if_noexcept
+- std::move_if_noexcept will return a movable r-value if the object has a noexcept move constructor, otherwise it will return a copyable l-value. We can use the noexcept specifier in conjunction with std::move_if_noexcept to use move semantics only when a strong exception guarantee exists (and use copy semantics otherwise).
