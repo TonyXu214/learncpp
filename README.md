@@ -2685,3 +2685,48 @@ Exception specifications and noexcept
 
 std::move_if_noexcept
 - std::move_if_noexcept will return a movable r-value if the object has a noexcept move constructor, otherwise it will return a copyable l-value. We can use the noexcept specifier in conjunction with std::move_if_noexcept to use move semantics only when a strong exception guarantee exists (and use copy semantics otherwise).
+
+### Chapter 28
+Input and output (I/O) streams
+- Abstractly, a stream is just a sequence of bytes that can be accessed sequentially. Over time, a stream may produce or consume potentially unlimited amounts of data.
+- Input streams are used to hold input from a data producer, such as a keyboard, a file, or a network
+  - the data is put into an input stream, where it will wait until the program is ready for it
+- Conversely, output streams are used to hold output for a particular data consumer, such as a monitor, a file, or a printer.
+  - When writing data to an output device, the device may not be ready to accept that data yet. The data will sit in the output stream until the printer begins consuming it.
+- Some devices, such as files and networks, are capable of being both input and output sources.
+- The nice thing about streams is the programmer only has to learn how to interact with the streams in order to read and write data to many different kinds of devices. The details about how the stream interfaces with the actual devices they are hooked up to is left up to the environment or operating system
+- ios is a typedef for std::basic_ios<char> that defines a bunch of stuff that is common to both input and output streams.
+- The istream class is the primary class used when dealing with input streams. With input streams, the extraction operator (>>) is used to remove values from the stream.
+- The ostream class is the primary class used when dealing with output streams. With output streams, the insertion operator (<<) is used to put values in the stream.
+- The iostream class can handle both input and output, allowing bidirectional I/O.
+- A standard stream is a pre-connected stream provided to a computer program by its environment.
+- C++ comes with four predefined standard stream objects that have already been set up for your use. The first three, you have seen before:
+  - cin -- an istream object tied to the standard input (typically the keyboard)
+  - cout -- an ostream object tied to the standard output (typically the monitor)
+  - cerr -- an ostream object tied to the standard error (typically the monitor), providing unbuffered output
+  - clog -- an ostream object tied to the standard error (typically the monitor), providing buffered output
+
+Input with istream
+- A manipulator is an object that is used to modify a stream when applied with the extraction (>>) or insertion (<<) operators
+- C++ provides a manipulator known as setw (in the iomanip header) that can be used to limit the number of characters read in from a stream
+- the extraction operator skips whitespace
+  - One of the most useful is the get() function, which simply gets a character from the input stream
+  - this will pick up the whitespace
+- there is another function called getline() that works similarly to get(), but will extract (and discard) the delimiter
+- If you need to know how many character were extracted by the last call of getline(), use gcount()
+- There is a special version of getline() that lives outside the istream class that is used for reading in variables of type std::string.
+- ignore() discards the first character in the stream.
+- ignore(int nCount) discards the first nCount characters.
+- peek() allows you to read a character from the stream without removing it from the stream.
+- unget() returns the last character read back into the stream so it can be read again by the next call.
+- putback(char ch) allows you to put a character of your choice back into the stream to be read by the next call.
+
+Output with ostream and ios
+- There are two ways to change the formatting options: flags, and manipulators.
+- You can think of flags as boolean variables that can be turned on and off. Manipulators are objects placed in a stream that affect the way things are input and output.
+- To switch a flag on, use the setf() function, with the appropriate flag as a parameter.
+- Many flags belong to groups, called format groups. A format group is a group of flags that perform similar (sometimes mutually exclusive) formatting options.
+- The second way is to use a different form of setf() that takes two parameters: the first parameter is the flag to set, and the second is the formatting group it belongs to. When using this form of setf(), all of the flags belonging to the group are turned off, and only the flag passed in is turned on
+- Using setf() and unsetf() tends to be awkward, so C++ provides a second way to change the formatting options: manipulators.
+- Flags live in the std::ios class, manipulators live in the std namespace, and the member functions live in the std::ostream class
+-
