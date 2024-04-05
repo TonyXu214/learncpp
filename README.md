@@ -2729,4 +2729,51 @@ Output with ostream and ios
 - The second way is to use a different form of setf() that takes two parameters: the first parameter is the flag to set, and the second is the formatting group it belongs to. When using this form of setf(), all of the flags belonging to the group are turned off, and only the flag passed in is turned on
 - Using setf() and unsetf() tends to be awkward, so C++ provides a second way to change the formatting options: manipulators.
 - Flags live in the std::ios class, manipulators live in the std namespace, and the member functions live in the std::ostream class
--
+
+Stream classes for strings
+- unlike cin and cout, these streams are not connected to an I/O channel (such as a keyboard, monitor, etc…). One of the primary uses of string streams is to buffer output for display at a later time, or to process input line-by-line
+- Note that the >> operator iterates through the string -- each successive use of >> returns the next extractable value in the stream. On the other hand, str() returns the whole value of the stream, even if the >> has already been used on the stream.
+- When clearing out a stringstream, it is also generally a good idea to call the clear() function:
+- clear() resets any error flags that may have been set and returns the stream back to the ok state
+
+Stream states and input validation
+
+Basic file I/O
+- There are 3 basic file I/O classes in C++: ifstream (derived from istream), ofstream (derived from ostream), and fstream (derived from iostream).
+- Unlike the cout, cin, cerr, and clog streams, which are already ready for use, file streams have to be explicitly set up by the programmer.
+  - this is extremely simple: to open a file for reading and/or writing, simply instantiate an object of the appropriate file I/O class, with the name of the file as a parameter.
+  - Once you are done, there are several ways to close a file: explicitly call the close() function, or just let the file I/O variable go out of scope (the file I/O class destructor will close the file for you)
+- Note that ifstream returns a 0 if we’ve reached the end of the file (EOF)
+- Output in C++ may be buffered. This means that anything that is output to a file stream may not be written to disk immediately. Instead, several output operations may be batched and handled together. This is done primarily for performance reasons. When a buffer is written to disk, this is called flushing the buffer
+  - One way to cause the buffer to be flushed is to close the file -- the contents of the buffer will be flushed to disk, and then the file will be closed.
+- Buffering is usually not a problem, but in certain circumstance it can cause complications for the unwary. The main culprit in this case is when there is data in the buffer, and then program terminates immediately (either by crashing, or by calling exit()). In these cases, the destructors for the file stream classes are not executed, which means the files are never closed, which means the buffers are never flushed
+  - In this case, the data in the buffer is not written to disk, and is lost forever. This is why it is always a good idea to explicitly close any open files before calling exit()
+- One interesting note is that std::endl; also flushes the output stream. Consequently, overuse of std::endl (causing unnecessary buffer flushes) can have performance impacts when doing buffered I/O where flushes are expensive (such as writing to a file). For this reason, performance conscious programmers will often use ‘\n’ instead of std::endl to insert a newline into the output stream, to avoid unnecessary flushing of the buffer.
+- It is possible to specify multiple flags by bitwise ORing them together (using the | operator). ifstream defaults to std::ios::in file mode. ofstream defaults to std::ios::out file mode. And fstream defaults to std::ios::in | std::ios::out file mode, meaning you can both read and write by default.
+- Due to the way fstream was designed, it may fail if std::ios::in is used and the file being opened does not exist. If you need to create a new file using fstream, use std::ios::out mode only
+
+Random file I/O
+- Each file stream class contains a file pointer that is used to keep track of the current read/write position within the file
+- When something is read from or written to a file, the reading/writing happens at the file pointer’s current location
+- By default, when opening a file for reading or writing, the file pointer is set to the beginning of the file. However, if a file is opened in append mode, the file pointer is moved to the end of the file, so that writing does not overwrite any of the current contents of the file.
+- Random file access is done by manipulating the file pointer using either seekg() function (for input) and seekp() function (for output). In case you are wondering, the g stands for “get” and the p for “put”. For some types of streams, seekg() (changing the read position) and seekp() (changing the write position) operate independently -- however, with file streams, the read and write position are always identical, so seekg and seekp can be used interchangeably
+- The seekg() and seekp() functions take two parameters. The first parameter is an offset that determines how many bytes to move the file pointer. The second parameter is an ios flag that specifies what the offset parameter should be offset from
+- In a text file, seeing to a position other than the beginning of the file may result in unexpected behavior.
+  - In programming, a newline (‘\n’) is actually an abstraction.
+  - On Windows, a newline is represented as sequential CR (carriage return) and LF (line feed) characters (thus taking 2 bytes of storage).
+  - On Unix, a newline is represented as a LF (line feed) character (thus taking 1 byte of storage).
+  - Seeking past a newline in either direction takes a variable number of bytes depending on how the file was encoded, which means results will vary depending on which encoding is used.
+  - Also on some operating systems, files may be padded with trailing zero bytes (bytes that have value 0). Seeking to the end of the file (or an offset from the end of the file) will produce different results on such files.
+- Two other useful functions are tellg() and tellp(), which return the absolute position of the file pointer. This can be used to determine the size of a file
+```
+std::ifstream inf {"Sample.txt"};
+inf.seekg(0, std::ios::end); // move to end of file
+std::cout << inf.tellg();
+```
+- The result of 64 in the prior example occurred on Windows. If you run the example on Unix, you’ll get 60 instead, due to the smaller newline representation. You may get something else if your file is padded with trailing zero bytes.
+- The fstream class is capable of both reading and writing a file at the same time -- almost! The big caveat here is that it is not possible to switch between reading and writing arbitrarily. Once a read or write has taken place, the only way to switch between the two is to perform an operation that modifies the file position (e.g. a seek).
+```
+iofile.seekg(iofile.tellg(), std::ios::beg); // seek to current file position
+```
+- the is_open() function will return true if the stream is currently open, and false otherwise
+- Do not write memory addresses to files. The variables that were originally at those addresses may be at different addresses when you read their values back in from disk, and the addresses will be invalid.
