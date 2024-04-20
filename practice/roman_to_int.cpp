@@ -1,10 +1,11 @@
 #include <iostream>
 #include <string>
 #include <unordered_map>
+#include <optional>
 
 namespace
 {
-    std::unordered_map<char, int> map {
+    std::unordered_map<char, int> romanToIntMap {
         { 'I', 1 },
         { 'V', 5 },
         { 'X', 10 },
@@ -15,57 +16,29 @@ namespace
     };
 }
 
-int romanToInt(std::string s)
+std::optional<int> romanToInt(const std::string& s)
 {
     int ret { 0 };
-    int size { static_cast<int>(s.size()) };
-    std::cout << s << '\n';
-    for (int idx { 0 }; idx < size; ++idx)
+    for (auto idx { 0 }; idx < std::ssize(s); ++idx)
     {
-        switch (s[idx])
+        auto it { romanToIntMap.find(s[idx]) };
+        if (it == romanToIntMap.end())
+            return std::nullopt;
+
+        int value { it->second };
+        if (idx + 1 < std::ssize(s))
         {
-            case 'I':
-                if (idx != size - 1 && (s[idx+1] == 'V' || s[idx+1] == 'X'))
-                {
-                    ret += (map.at(s[idx+1]) - map.at(s[idx]));
-                    ++idx;
-                }
-                else
-                    ret += map.at(s[idx]);
-                break;
-            case 'V':
-                ret += map.at(s[idx]);
-                break;
-            case 'X':
-                if (idx != size - 1 && (s[idx+1] == 'L' || s[idx+1] == 'C'))
-                {
-                    ret += (map.at(s[idx+1]) - map.at(s[idx]));
-                    ++idx;
-                }
-                else
-                    ret += map.at(s[idx]);
-                break;
-            case 'L':
-                ret += map.at(s[idx]);
-                break;
-            case 'C':
-                if (idx != size - 1 && (s[idx+1] == 'D' || s[idx+1] == 'M'))
-                {
-                    ret += (map.at(s[idx+1]) - map.at(s[idx]));
-                    ++idx;
-                }
-                else
-                    ret += map.at(s[idx]);
-                break;
-            case 'D':
-                ret += map.at(s[idx]);
-                break;
-            case 'M':
-                ret += map.at(s[idx]);
-                break;
-            default:
-                throw "Invalid character";
+            auto nextIt { romanToIntMap.find(s[idx+1]) };
+            if (nextIt != romanToIntMap.end() && nextIt->second > value)
+            {
+                value = nextIt->second - value;
+                ++idx;
+            } else {
+                return std::nullopt;
+            }
         }
+
+        ret += value;
     }
 
     return ret;
@@ -77,9 +50,9 @@ int main()
     std::string p2 { "LVIII" };
     std::string p3 { "MCMXCIV" };
 
-    std::cout << romanToInt(p1) << '\n';
-    std::cout << romanToInt(p2) << '\n';
-    std::cout << romanToInt(p3) << '\n';
+    std::cout << romanToInt(p1).value() << '\n';
+    std::cout << romanToInt(p2).value() << '\n';
+    std::cout << romanToInt(p3).value() << '\n';
 
     return 0;
 }
